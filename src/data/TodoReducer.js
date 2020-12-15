@@ -1,7 +1,6 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AsyncStorage } from 'react-native';
 
-
 const TodoReducer = async (state, action) => {
   switch (action.type) {
     case 'UPDATE_TODO': {

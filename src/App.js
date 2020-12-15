@@ -42,9 +42,9 @@ const App = () => {
 
   return (
     // <SafeAreaView>
-      <TodoStore> 
-        <AppContainer />
-      </TodoStore>
+    <TodoStore>
+      <AppContainer />
+    </TodoStore>
     /* </SafeAreaView> */
   );
 };

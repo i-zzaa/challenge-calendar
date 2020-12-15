@@ -136,7 +136,7 @@ const CreateTask = ({ navigation }) => {
   const [timeType, setTimeType] = useState('');
   const [creatTodo, setCreatTodo] = useState({});
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState([]);
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -153,9 +153,11 @@ const CreateTask = ({ navigation }) => {
     const { createNewCalendar } = navigation.state.params;
     const calendarId = await createNewCalendar();
     try {
-      const createEventAsyncRes = await this._addEventsToCalendar(calendarId);
-      setCreateEventAsyncRes(createEventAsyncRes, () => {
-        this._handleCreateEventData(value);
+      const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
+      debugger;
+
+      setCreateEventAsyncRes(_createEventAsyncRes, () => {
+        _handleCreateEventData(value);
       });
     } catch (e) {
       Alert.alert(e.message);
@@ -163,6 +165,7 @@ const CreateTask = ({ navigation }) => {
   };
 
   const _addEventsToCalendar = async (calendarId) => {
+    debugger;
     const event = {
       title: taskText,
       notes: notesText,
@@ -172,9 +175,9 @@ const CreateTask = ({ navigation }) => {
     };
 
     try {
-      const createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
+      const _createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
 
-      return createEventAsyncRes;
+      return _createEventAsyncRes;
     } catch (error) {
       console.log(error);
     }
@@ -184,10 +187,11 @@ const CreateTask = ({ navigation }) => {
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
 
   const _handleCreateEventData = async (value) => {
-    const {
-      state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
-      props: { navigation },
-    } = this;
+    debugger;
+    // const {
+    //   state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
+    //   props: { navigation },
+    // } = this;
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
       key: uuid(),
@@ -232,7 +236,8 @@ const CreateTask = ({ navigation }) => {
     const minute = moment(date).minute();
     const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
 
-    setAlarmTime(newModifiedDay)._hideDateTimePicker();
+    setAlarmTime(newModifiedDay);
+    _hideDateTimePicker();
   };
 
   useEffect(() => {
@@ -243,7 +248,7 @@ const CreateTask = ({ navigation }) => {
     };
 
     setSelectedDay(_todo);
-  });
+  }, []);
 
   useEffect(() => {
     keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
@@ -314,7 +319,7 @@ const CreateTask = ({ navigation }) => {
                     }}
                     monthFormat="yyyy MMMM"
                     hideArrows
-                    markingType="simple"
+                    markingType="dot"
                     theme={{
                       selectedDayBackgroundColor: '#2E66E7',
                       selectedDayTextColor: '#ffffff',
@@ -329,7 +334,7 @@ const CreateTask = ({ navigation }) => {
                 <View style={styles.taskContainer}>
                   <TextInput
                     style={styles.title}
-                    onChangeText={(text) => setTaskText(taskText)}
+                    onChangeText={(text) => setTaskText(text)}
                     value={taskText}
                     placeholder="What do you need to do?"
                   />

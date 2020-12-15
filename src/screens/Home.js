@@ -1,11 +1,11 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorage } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import moment from 'moment';
 import React, { useEffect, useState, useRef } from 'react';
 import {
+  AsyncStorage,
   View,
   Image,
   TouchableOpacity,
@@ -18,6 +18,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+
 //import * as Localization from 'expo-localization';
 import CalendarStrip from 'react-native-calendar-strip';
 //import DateTimePicker from 'react-native-modal-datetime-picker';
