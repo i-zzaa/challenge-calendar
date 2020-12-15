@@ -2,9 +2,13 @@
 import { AsyncStorage } from 'react-native';
 
 const TodoReducer = async (state, action) => {
+  const { todo } = state.todo;
+  const item = action.payload;
+
+  debugger;
+
   switch (action.type) {
     case 'UPDATE_TODO': {
-      const { todo } = state;
       const datePresent = todo.find((data) => {
         if (data.date === item.date) {
           return true;
@@ -42,11 +46,11 @@ const TodoReducer = async (state, action) => {
     case 'DELETE_TODO': {
       return {
         ...state,
-        deleteTodo: action.data,
+        deleteTodo: action.payload,
       };
     }
     case 'UPDATE_SELECT_TASK': {
-      const _previousTodo = [...state.todo];
+      const _previousTodo = [...todo];
 
       const newTodo = _previousTodo.map((data) => {
         if (item.date === data.date) {
@@ -76,7 +80,7 @@ const TodoReducer = async (state, action) => {
       break;
     }
     case 'DELETE_SELECT_TASK': {
-      const __previousTodo = [...state.todo];
+      const __previousTodo = [...todo];
 
       const _newTodo = __previousTodo.map((data) => {
         if (item.date === data.date) {

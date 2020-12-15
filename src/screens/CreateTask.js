@@ -2,7 +2,7 @@ import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import * as Localization from 'expo-localization';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Text,
   Image,
@@ -188,6 +188,7 @@ const CreateTask = ({ navigation }) => {
 
   const _handleCreateEventData = async (value) => {
     debugger;
+
     // const {
     //   state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
     //   props: { navigation },
