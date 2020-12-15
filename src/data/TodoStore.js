@@ -3,14 +3,8 @@ import AsyncStorage from 'react-native';
 
 import { Context } from './Context';
 
-const dataTodoStore = ({ children }) => {
-  const [todo, setTodo] = useState({
-    updateTodo: (item) => _updateTodo2(item),
-    deleteTodo: (item) => _deleteTodo(item),
-    updateSelectedTask: (item) => _updateSelectedTask(item),
-    deleteSelectedTask: (item) => _deleteSelectedTask(item),
-    todo: {},
-  });
+const DataTodoStore = ({ children }) => {
+  const [todo, setTodo] = useState({});
 
   const _deleteSelectedTask = async (item) => {
     const previousTodo = [...todo];
@@ -110,7 +104,15 @@ const dataTodoStore = ({ children }) => {
 
   const _deleteTodo = () => {};
 
-  useEffect(() => {});
+  useEffect(() => {
+    setTodo({
+      updateTodo: (item) => _updateTodo2(item),
+      deleteTodo: (item) => _deleteTodo(item),
+      updateSelectedTask: (item) => _updateSelectedTask(item),
+      deleteSelectedTask: (item) => _deleteSelectedTask(item),
+      todo: {},
+    });
+  });
 
   useEffect(async () => {
     try {
@@ -123,4 +125,4 @@ const dataTodoStore = ({ children }) => {
 
   return <Context.Provider value={todo}>{children}</Context.Provider>;
 };
-export default dataTodoStore;
+export default DataTodoStore;
