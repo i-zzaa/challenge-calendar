@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
@@ -16,6 +15,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 //import * as Localization from 'expo-localization';
 import CalendarStrip from 'react-native-calendar-strip';

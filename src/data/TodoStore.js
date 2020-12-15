@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
+import AsyncStorage from 'react-native';
 
 import { Context } from './Context';
 
@@ -9,6 +9,7 @@ const dataTodoStore = ({ children }) => {
     deleteTodo: (item) => _deleteTodo(item),
     updateSelectedTask: (item) => _updateSelectedTask(item),
     deleteSelectedTask: (item) => _deleteSelectedTask(item),
+    todo: {},
   });
 
   const _deleteSelectedTask = async (item) => {
@@ -109,10 +110,12 @@ const dataTodoStore = ({ children }) => {
 
   const _deleteTodo = () => {};
 
+  useEffect(() => {});
+
   useEffect(async () => {
     try {
-      const todo = await AsyncStorage.getItem('TODO');
-      if (todo !== null) setTodo({ ...todo, todo: JSON.parse(todo) });
+      const _todo = await AsyncStorage.getItem('TODO');
+      if (_todo !== null) setTodo({ ...todo, todo: JSON.parse(_todo) });
     } catch (error) {
       // Error saving data
     }
