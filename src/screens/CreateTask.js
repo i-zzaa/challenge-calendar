@@ -136,7 +136,7 @@ const CreateTask = ({ navigation }) => {
   const [timeType, setTimeType] = useState('');
   const [creatTodo, setCreatTodo] = useState({});
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState([]);
+  const [selectedDay, setSelectedDay] = useState({});
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -154,7 +154,6 @@ const CreateTask = ({ navigation }) => {
     const calendarId = await createNewCalendar();
     try {
       const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
-      debugger;
 
       setCreateEventAsyncRes(_createEventAsyncRes, () => {
         _handleCreateEventData(value);
@@ -165,7 +164,6 @@ const CreateTask = ({ navigation }) => {
   };
 
   const _addEventsToCalendar = async (calendarId) => {
-    debugger;
     const event = {
       title: taskText,
       notes: notesText,
@@ -187,8 +185,6 @@ const CreateTask = ({ navigation }) => {
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
 
   const _handleCreateEventData = async (value) => {
-    debugger;
-
     // const {
     //   state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
     //   props: { navigation },
@@ -242,7 +238,7 @@ const CreateTask = ({ navigation }) => {
   };
 
   useEffect(() => {
-    const _todo = [];
+    const _todo = {};
     _todo[`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`] = {
       selected: true,
       selectedColor: '#2E66E7',
@@ -312,7 +308,7 @@ const CreateTask = ({ navigation }) => {
                         selected: true,
                         selectedColor: '#2E66E7',
                       };
-
+                      debugger;
                       setSelectedDay({ ...selectedDay, _selected });
 
                       setCurrentDay(day.dateString);

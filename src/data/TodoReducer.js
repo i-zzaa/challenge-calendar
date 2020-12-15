@@ -5,8 +5,6 @@ const TodoReducer = async (state, action) => {
   const { todo } = state.todo;
   const item = action.payload;
 
-  debugger;
-
   switch (action.type) {
     case 'UPDATE_TODO': {
       const datePresent = todo.find((data) => {

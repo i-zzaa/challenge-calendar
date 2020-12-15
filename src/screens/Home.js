@@ -345,7 +345,7 @@ const Home = ({ navigation }) => {
   };
 
   useEffect(() => {
-    return () => _handleDeletePreviousDayTask();
+    _handleDeletePreviousDayTask();
   }, []);
 
   return (
@@ -366,9 +366,7 @@ const Home = ({ navigation }) => {
                   onChangeText={(text) => {
                     const prevSelectedTask = { ...selectedTask };
                     prevSelectedTask.title = text;
-                    this.setState({
-                      selectedTask: prevSelectedTask,
-                    });
+                    setSelectedTask(prevSelectedTask);
                   }}
                   value={selectedTask.title}
                   placeholder="What do you need to do?"
@@ -564,6 +562,7 @@ const Home = ({ navigation }) => {
               iconContainer={{ flex: 0.1 }}
               markedDates={markedDate}
               onDateSelected={(date) => {
+                debugger;
                 const selectedDate = `${moment(date).format('YYYY')}-${moment(date).format(
                   'MM'
                 )}-${moment(date).format('DD')}`;
