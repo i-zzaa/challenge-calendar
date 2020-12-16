@@ -17,6 +17,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Button,
 } from 'react-native';
 
 //import * as Localization from 'expo-localization';
@@ -567,6 +568,17 @@ const Home = ({ navigation }) => {
                 )}-${moment(date).format('DD')}`;
                 _updateCurrentTask(selectedDate);
                 setCurrentDate(selectedDate);
+              }}
+            />
+            <Button
+              title="Clean All"
+              disabled={!todoList.length}
+              onPress={async () => {
+                await value.cleanAll();
+
+                setTodoList([]);
+                setMarkedDate([]);
+                _updateCurrentTask(nullß);
               }}
             />
             <TouchableOpacity

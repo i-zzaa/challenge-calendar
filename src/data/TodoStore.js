@@ -7,18 +7,20 @@ import { Context } from './Context';
 const DataTodoStore = ({ children }) => {
   const [todo, setTodo] = useState([]);
   const _TODO = {
-    updateTodo: (item) => {
-      _updateTodo2(item);
-    },
-    deleteTodo: (item) => {
-      _deleteTodo(item);
-    },
-    updateSelectedTask: (item) => {
-      _updateSelectedTask(item);
-    },
-    deleteSelectedTask: (item) => {
-      _deleteSelectedTask(item);
-    },
+    updateTodo: (item) => _updateTodo2(item),
+    deleteTodo: (item) => _deleteTodo(item),
+    updateSelectedTask: (item) => _updateSelectedTask(item),
+    deleteSelectedTask: (item) => _deleteSelectedTask(item),
+    cleanAll: () => _cleanAll(),
+  };
+
+  const _cleanAll = async () => {
+    try {
+      await AsyncStorage.setItem('TODO', JSON.stringify([]));
+      setTodo([]);
+    } catch (error) {
+      // Error saving data
+    }
   };
 
   const _deleteSelectedTask = async (item) => {
