@@ -52,25 +52,36 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 20,
   },
-  learn: {
+  red: {
     height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
+    width: 60,
+    backgroundColor: '#b31717',
     justifyContent: 'center',
     borderRadius: 5,
+    marginRight: 7,
   },
-  design: {
+  blue: {
     height: 23,
-    width: 59,
+    width: 60,
     backgroundColor: '#62CCFB',
     justifyContent: 'center',
     borderRadius: 5,
     marginRight: 7,
   },
-  readBook: {
+  green: {
     height: 23,
-    width: 83,
+    width: 60,
     backgroundColor: '#4CD565',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  random: {
+    height: 23,
+    width: 60,
+    backgroundColor: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+      Math.random() * Math.floor(256)
+    )},${Math.floor(Math.random() * Math.floor(256))})`,
     justifyContent: 'center',
     borderRadius: 5,
     marginRight: 7,
@@ -137,6 +148,7 @@ const CreateTask = ({ navigation }) => {
   const [creatTodo, setCreatTodo] = useState({});
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState({});
+  const [color, setColor] = useState('');
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -201,9 +213,7 @@ const CreateTask = ({ navigation }) => {
             isOn: isAlarmSet,
             createEventAsyncRes,
           },
-          color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-            Math.random() * Math.floor(256)
-          )},${Math.floor(Math.random() * Math.floor(256))})`,
+          color,
         },
       ],
       markedDot: {
@@ -211,7 +221,9 @@ const CreateTask = ({ navigation }) => {
         dots: [
           {
             key: uuid(),
-            color: '#2E66E7',
+            color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+              Math.random() * Math.floor(256)
+            )},${Math.floor(Math.random() * Math.floor(256))})`,
             selectedDotColor: '#2E66E7',
           },
         ],
@@ -224,7 +236,6 @@ const CreateTask = ({ navigation }) => {
   };
 
   const _handleDatePicked = (date) => {
-    debugger;
     const selectedDatePicked = currentDay;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
@@ -339,18 +350,29 @@ const CreateTask = ({ navigation }) => {
                       color: '#BDC6D8',
                       marginVertical: 10,
                     }}>
-                    Suggestion
+                    Tag
                   </Text>
                   <View style={{ flexDirection: 'row' }}>
-                    <View style={styles.readBook}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Read book</Text>
-                    </View>
-                    <View style={styles.design}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Design</Text>
-                    </View>
-                    <View style={styles.learn}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Learn</Text>
-                    </View>
+                    <TouchableOpacity onPress={() => setColor('green')} style={styles.green}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setColor('blue')} style={styles.blue}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setColor('red')} style={styles.red}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setColor(
+                          `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                            Math.random() * Math.floor(256)
+                          )},${Math.floor(Math.random() * Math.floor(256))})`
+                        )
+                      }
+                      style={styles.random}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                    </TouchableOpacity>
                   </View>
                   <View style={styles.notesContent} />
                   <View>
