@@ -1,12 +1,11 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 
 import { Context } from './Context';
-import TodoReducer from './TodoReducer';
 
 const DataTodoStore = ({ children }) => {
-  const [todo, setTodo] = useState();
+  const [todo, setTodo] = useState([]);
   const _TODO = {
     updateTodo: (item) => {
       _updateTodo2(item);
@@ -78,11 +77,13 @@ const DataTodoStore = ({ children }) => {
   };
 
   const _updateTodo2 = async (item) => {
-    const datePresent = todo.find((data) => {
-      if (data.date === item.date) {
-        return true;
-      }
-    });
+    const datePresent = todo
+      ? todo.find((data) => {
+          if (data.date === item.date) {
+            return true;
+          }
+        })
+      : null;
 
     if (datePresent) {
       const updatedTodo = todo.map((data) => {
@@ -100,7 +101,7 @@ const DataTodoStore = ({ children }) => {
         // Error saving data
       }
     } else {
-      const newTodo = [...todo, item];
+      const newTodo = [item];
 
       try {
         await AsyncStorage.setItem('TODO', JSON.stringify(newTodo));

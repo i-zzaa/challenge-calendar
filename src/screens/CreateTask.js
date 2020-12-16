@@ -185,10 +185,6 @@ const CreateTask = ({ navigation }) => {
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
 
   const _handleCreateEventData = async (value) => {
-    // const {
-    //   state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
-    //   props: { navigation },
-    // } = this;
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
       key: uuid(),
@@ -228,6 +224,7 @@ const CreateTask = ({ navigation }) => {
   };
 
   const _handleDatePicked = (date) => {
+    debugger;
     const selectedDatePicked = currentDay;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
@@ -303,13 +300,14 @@ const CreateTask = ({ navigation }) => {
                     pagingEnabled
                     calendarWidth={350}
                     onDayPress={(day) => {
-                      const _selected = [];
-                      _selected[day.dateString] = {
+                      //const _selected = selectedDay;
+                      const _selected = {};
+                      const date = day.dateString;
+                      _selected[date] = {
                         selected: true,
                         selectedColor: '#2E66E7',
                       };
-                      debugger;
-                      setSelectedDay({ ...selectedDay, _selected });
+                      setSelectedDay(_selected);
 
                       setCurrentDay(day.dateString);
                       setAlarmTime(day.dateString);

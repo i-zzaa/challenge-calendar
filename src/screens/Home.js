@@ -562,7 +562,6 @@ const Home = ({ navigation }) => {
               iconContainer={{ flex: 0.1 }}
               markedDates={markedDate}
               onDateSelected={(date) => {
-                debugger;
                 const selectedDate = `${moment(date).format('YYYY')}-${moment(date).format(
                   'MM'
                 )}-${moment(date).format('DD')}`;
