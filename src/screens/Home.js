@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     paddingLeft: 8,
     fontSize: 19,
+    marginBottom: 20,
   },
   taskContainer: {
     height: 475,
@@ -147,6 +148,46 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 5,
     padding: 22,
+  },
+  red: {
+    height: 23,
+    width: 60,
+    backgroundColor: '#b31717',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  blue: {
+    height: 23,
+    width: 60,
+    backgroundColor: '#62CCFB',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  green: {
+    height: 23,
+    width: 60,
+    backgroundColor: '#4CD565',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  random: {
+    height: 23,
+    width: 60,
+    backgroundColor: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+      Math.random() * Math.floor(256)
+    )},${Math.floor(Math.random() * Math.floor(256))})`,
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  text: {
+    color: '#9CAAC4',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
   },
 });
 
@@ -349,6 +390,12 @@ const Home = ({ navigation }) => {
     return calendarId;
   };
 
+  const update = (index, value) => {
+    const prevSelectedTask = { ...selectedTask };
+    prevSelectedTask[index] = value;
+    setSelectedTask(prevSelectedTask);
+  };
+
   useEffect(() => {
     const weatherForecast = async () => {
       try {
@@ -367,10 +414,11 @@ const Home = ({ navigation }) => {
           {selectedTask !== null && (
             <Task isModalVisible={isModalVisible}>
               <DateTimePicker
-                isVisible={isDateTimePickerVisible}
+                isVisible={false}
                 onConfirm={_handleDatePicked}
                 onCancel={_hideDateTimePicker}
                 mode="time"
+                value={moment(currentDate).format("YYYY-MM-DD'T'HH:mm:ss.sssZ")}
               />
               <View style={styles.taskContainer}>
                 <TextInput
@@ -383,24 +431,29 @@ const Home = ({ navigation }) => {
                   value={selectedTask.title}
                   placeholder="What do you need to do?"
                 />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: '#BDC6D8',
-                    marginVertical: 10,
-                  }}>
-                  Suggestion
-                </Text>
+                <Text style={styles.text}>Tag</Text>
                 <View style={{ flexDirection: 'row' }}>
-                  <View style={styles.readBook}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Read book</Text>
-                  </View>
-                  <View style={styles.design}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Design</Text>
-                  </View>
-                  <View style={styles.learn}>
-                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Learn</Text>
-                  </View>
+                  <TouchableOpacity onPress={() => update('color', 'green')} style={styles.green}>
+                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => update('color', 'blue')} style={styles.blue}>
+                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => update('color', 'red')} style={styles.red}>
+                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() =>
+                      update(
+                        'color',
+                        `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                          Math.random() * Math.floor(256)
+                        )},${Math.floor(Math.random() * Math.floor(256))})`
+                      )
+                    }
+                    style={styles.random}>
+                    <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.notesContent} />
                 <View>
@@ -418,11 +471,7 @@ const Home = ({ navigation }) => {
                       fontSize: 19,
                       marginTop: 3,
                     }}
-                    onChangeText={(text) => {
-                      const prevSelectedTask = { ...selectedTask };
-                      prevSelectedTask.notes = text;
-                      setSelectedTask(prevSelectedTask);
-                    }}
+                    onPress={(text) => update('notes', text)}
                     value={selectedTask.notes}
                     placeholder="Enter notes about the task."
                   />
@@ -439,6 +488,11 @@ const Home = ({ navigation }) => {
                   </Text>
                   <TouchableOpacity
                     onPress={() => _showDateTimePicker()}
+                    onValueChange={(value) => {
+                      const prevSelectedTask = { ...selectedTask };
+                      prevSelectedTask.alarm.time = value;
+                      setSelectedTask(prevSelectedTask);
+                    }}
                     style={{
                       height: 25,
                       marginTop: 3,
