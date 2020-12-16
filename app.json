@@ -1,0 +1,12 @@
+{
+  "name": "challenge-calendar",
+  "displayName": "challenge-calendar",
+  "expo": {
+    "name": "challenge-calendar",
+    "slug": "challenge-calendar",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
