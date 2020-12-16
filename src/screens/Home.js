@@ -218,6 +218,7 @@ const Home = ({ navigation }) => {
           return false;
         });
         if (todoLists.length !== 0) {
+          todoLists[0].todoList.sort((a, b) => new Date(a.alarm.time) - new Date(b.alarm.time));
           setTodoList(todoLists[0].todoList);
           setMarkedDate(markDot);
         } else {

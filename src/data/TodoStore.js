@@ -101,6 +101,7 @@ const DataTodoStore = ({ children }) => {
       });
       try {
         await AsyncStorage.setItem('TODO', JSON.stringify(updatedTodo));
+
         setTodo(updatedTodo);
       } catch (error) {
         // Error saving data

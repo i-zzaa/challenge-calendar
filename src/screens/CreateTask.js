@@ -201,20 +201,20 @@ const CreateTask = ({ navigation }) => {
 
   const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
-
+  const getDate = () => {
+    return `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
+      currentDay
+    ).format('DD')}`;
+  };
   const _handleCreateEventData = async (value) => {
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
       key: uuid(),
-      date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-        currentDay
-      ).format('DD')}`,
+      date: getDate(),
       todoList: [
         {
           key: uuid(),
-          date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-            currentDay
-          ).format('DD')}`,
+          date: getDate(),
           title: taskText,
           notes: notesText,
           city,
@@ -222,9 +222,7 @@ const CreateTask = ({ navigation }) => {
             time: alarmTime,
             isOn: isAlarmSet,
             createEventAsyncRes,
-            date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-              currentDay
-            ).format('DD')}`,
+            date: getDate(),
           },
           color,
         },
