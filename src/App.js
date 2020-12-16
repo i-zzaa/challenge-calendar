@@ -1,19 +1,50 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import * as Permissions from 'expo-permissions';
+import React, { useEffect } from 'react';
+import { SafeAreaView, Platform } from 'react-native';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-    </View>
-  );
-}
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+import TodoStore from './data/TodoStore';
+import CreateTask from './screens/CreateTask';
+import Home from './screens/Home';
+
+const AppNavigator = createStackNavigator(
+  {
+    Home,
+    CreateTask,
   },
-});
+  {
+    headerMode: 'none',
+  }
+);
+
+const AppContainer = createAppContainer(AppNavigator);
+
+const App = () => {
+  const askForCalendarPermissions = async () => {
+    await Permissions.askAsync(Permissions.CALENDAR);
+  };
+
+  const askForReminderPermissions = async () => {
+    if (Platform.OS === 'android') {
+      return true;
+    }
+    await Permissions.askAsync(Permissions.REMINDERS);
+  };
+
+  useEffect(() => {
+    askForCalendarPermissions();
+    askForReminderPermissions();
+  }, []);
+
+  return (
+    // <SafeAreaView>
+      <TodoStore> 
+        <AppContainer />
+      </TodoStore>
+    /* </SafeAreaView> */
+  );
+};
+
+export default App;
