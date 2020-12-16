@@ -15,12 +15,14 @@ import {
   Switch,
   StyleSheet,
   Alert,
+  Picker,
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import uuid from 'uuid';
 
 import { Context } from '../data/Context';
+import { getCity } from '../services/city';
 
 const { width: vw } = Dimensions.get('window');
 
@@ -149,6 +151,8 @@ const CreateTask = ({ navigation }) => {
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState({});
   const [color, setColor] = useState('');
+  const [city, setCity] = useState('');
+  const [pickerCity, setPickerCity] = useState([]);
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -206,12 +210,19 @@ const CreateTask = ({ navigation }) => {
       todoList: [
         {
           key: uuid(),
+          date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
+            currentDay
+          ).format('DD')}`,
           title: taskText,
           notes: notesText,
+          city,
           alarm: {
             time: alarmTime,
             isOn: isAlarmSet,
             createEventAsyncRes,
+            date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
+              currentDay
+            ).format('DD')}`,
           },
           color,
         },
@@ -246,6 +257,14 @@ const CreateTask = ({ navigation }) => {
   };
 
   useEffect(() => {
+    const _pickerCity = async () => {
+      try {
+        const getPickerCity = await getCity();
+        setPickerCity(getPickerCity.results);
+      } catch (error) {}
+    };
+    _pickerCity();
+
     const _todo = {};
     _todo[`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`] = {
       selected: true,
@@ -343,6 +362,7 @@ const CreateTask = ({ navigation }) => {
                     onChangeText={(text) => setTaskText(text)}
                     value={taskText}
                     placeholder="What do you need to do?"
+                    maxLength={30}
                   />
                   <Text
                     style={{
@@ -383,10 +403,20 @@ const CreateTask = ({ navigation }) => {
                         fontSize: 19,
                         marginTop: 3,
                       }}
+                      maxLength={20}
                       onChangeText={(text) => setNotesText(text)}
                       value={notesText}
                       placeholder="Enter notes about the task."
                     />
+                  </View>
+                  <View>
+                    <Text style={styles.notes}>City</Text>
+                    <Picker
+                      selectedValue={city}
+                      style={{ height: 50, width: 100 }}
+                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
+                      <Picker.Item label="" value="" />
+                    </Picker>
                   </View>
                   <View style={styles.seperator} />
                   <View>
