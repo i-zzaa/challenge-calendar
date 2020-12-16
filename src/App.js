@@ -2,6 +2,8 @@ import * as Permissions from 'expo-permissions';
 import React, { useEffect } from 'react';
 import { SafeAreaView, Platform } from 'react-native';
 
+//import { AppContainer } from './routes';
+
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 
@@ -40,9 +42,9 @@ const App = () => {
 
   return (
     // <SafeAreaView>
-      <TodoStore> 
-        <AppContainer />
-      </TodoStore>
+    <TodoStore>
+      <AppContainer />
+    </TodoStore>
     /* </SafeAreaView> */
   );
 };

@@ -2,7 +2,7 @@ import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import * as Localization from 'expo-localization';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Text,
   Image,
@@ -15,12 +15,14 @@ import {
   Switch,
   StyleSheet,
   Alert,
+  Picker,
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import uuid from 'uuid';
 
 import { Context } from '../data/Context';
+import { getCity } from '../services/city';
 
 const { width: vw } = Dimensions.get('window');
 
@@ -40,11 +42,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 20,
   },
-  notes: {
-    color: '#9CAAC4',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   notesContent: {
     height: 0.5,
     width: '100%',
@@ -52,25 +49,42 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 20,
   },
-  learn: {
+  text: {
+    color: '#9CAAC4',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  red: {
     height: 23,
-    width: 51,
-    backgroundColor: '#F8D557',
+    width: 60,
+    backgroundColor: '#b31717',
     justifyContent: 'center',
     borderRadius: 5,
+    marginRight: 7,
   },
-  design: {
+  blue: {
     height: 23,
-    width: 59,
+    width: 60,
     backgroundColor: '#62CCFB',
     justifyContent: 'center',
     borderRadius: 5,
     marginRight: 7,
   },
-  readBook: {
+  green: {
     height: 23,
-    width: 83,
+    width: 60,
     backgroundColor: '#4CD565',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginRight: 7,
+  },
+  random: {
+    height: 23,
+    width: 60,
+    backgroundColor: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+      Math.random() * Math.floor(256)
+    )},${Math.floor(Math.random() * Math.floor(256))})`,
     justifyContent: 'center',
     borderRadius: 5,
     marginRight: 7,
@@ -81,9 +95,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     paddingLeft: 8,
     fontSize: 19,
+    marginBottom: 20,
   },
   taskContainer: {
-    height: 400,
+    height: 650,
     width: 327,
     alignSelf: 'center',
     borderRadius: 20,
@@ -136,7 +151,10 @@ const CreateTask = ({ navigation }) => {
   const [timeType, setTimeType] = useState('');
   const [creatTodo, setCreatTodo] = useState({});
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState({});
+  const [color, setColor] = useState('');
+  const [city, setCity] = useState('');
+  const [pickerCity, setPickerCity] = useState([]);
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -153,9 +171,10 @@ const CreateTask = ({ navigation }) => {
     const { createNewCalendar } = navigation.state.params;
     const calendarId = await createNewCalendar();
     try {
-      const createEventAsyncRes = await this._addEventsToCalendar(calendarId);
-      setCreateEventAsyncRes(createEventAsyncRes, () => {
-        this._handleCreateEventData(value);
+      const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
+
+      setCreateEventAsyncRes(_createEventAsyncRes, () => {
+        _handleCreateEventData(value);
       });
     } catch (e) {
       Alert.alert(e.message);
@@ -172,9 +191,9 @@ const CreateTask = ({ navigation }) => {
     };
 
     try {
-      const createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
+      const _createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
 
-      return createEventAsyncRes;
+      return _createEventAsyncRes;
     } catch (error) {
       console.log(error);
     }
@@ -182,31 +201,30 @@ const CreateTask = ({ navigation }) => {
 
   const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
-
+  const getDate = () => {
+    return `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
+      currentDay
+    ).format('DD')}`;
+  };
   const _handleCreateEventData = async (value) => {
-    const {
-      state: { currentDay, taskText, notesText, isAlarmSet, alarmTime, createEventAsyncRes },
-      props: { navigation },
-    } = this;
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
       key: uuid(),
-      date: `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-        currentDay
-      ).format('DD')}`,
+      date: getDate(),
       todoList: [
         {
           key: uuid(),
+          date: getDate(),
           title: taskText,
           notes: notesText,
+          city,
           alarm: {
             time: alarmTime,
             isOn: isAlarmSet,
             createEventAsyncRes,
+            date: getDate(),
           },
-          color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-            Math.random() * Math.floor(256)
-          )},${Math.floor(Math.random() * Math.floor(256))})`,
+          color,
         },
       ],
       markedDot: {
@@ -214,7 +232,9 @@ const CreateTask = ({ navigation }) => {
         dots: [
           {
             key: uuid(),
-            color: '#2E66E7',
+            color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+              Math.random() * Math.floor(256)
+            )},${Math.floor(Math.random() * Math.floor(256))})`,
             selectedDotColor: '#2E66E7',
           },
         ],
@@ -232,18 +252,27 @@ const CreateTask = ({ navigation }) => {
     const minute = moment(date).minute();
     const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
 
-    setAlarmTime(newModifiedDay)._hideDateTimePicker();
+    setAlarmTime(newModifiedDay);
+    _hideDateTimePicker();
   };
 
   useEffect(() => {
-    const _todo = [];
+    const _pickerCity = async () => {
+      try {
+        const getPickerCity = await getCity();
+        setPickerCity(getPickerCity);
+      } catch (error) {}
+    };
+    _pickerCity();
+
+    const _todo = {};
     _todo[`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`] = {
       selected: true,
       selectedColor: '#2E66E7',
     };
 
     setSelectedDay(_todo);
-  });
+  }, []);
 
   useEffect(() => {
     keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
@@ -301,20 +330,21 @@ const CreateTask = ({ navigation }) => {
                     pagingEnabled
                     calendarWidth={350}
                     onDayPress={(day) => {
-                      const _selected = [];
-                      _selected[day.dateString] = {
+                      //const _selected = selectedDay;
+                      const _selected = {};
+                      const date = day.dateString;
+                      _selected[date] = {
                         selected: true,
                         selectedColor: '#2E66E7',
                       };
-
-                      setSelectedDay({ ...selectedDay, _selected });
+                      setSelectedDay(_selected);
 
                       setCurrentDay(day.dateString);
                       setAlarmTime(day.dateString);
                     }}
                     monthFormat="yyyy MMMM"
                     hideArrows
-                    markingType="simple"
+                    markingType="dot"
                     theme={{
                       selectedDayBackgroundColor: '#2E66E7',
                       selectedDayTextColor: '#ffffff',
@@ -329,53 +359,53 @@ const CreateTask = ({ navigation }) => {
                 <View style={styles.taskContainer}>
                   <TextInput
                     style={styles.title}
-                    onChangeText={(text) => setTaskText(taskText)}
+                    onChangeText={(text) => setTaskText(text)}
                     value={taskText}
                     placeholder="What do you need to do?"
+                    maxLength={30}
                   />
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: '#BDC6D8',
-                      marginVertical: 10,
-                    }}>
-                    Suggestion
-                  </Text>
+                  <Text style={styles.text}>Tag</Text>
                   <View style={{ flexDirection: 'row' }}>
-                    <View style={styles.readBook}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Read book</Text>
-                    </View>
-                    <View style={styles.design}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Design</Text>
-                    </View>
-                    <View style={styles.learn}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Learn</Text>
-                    </View>
+                    <TouchableOpacity onPress={() => setColor('green')} style={styles.green}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setColor('blue')} style={styles.blue}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setColor('red')} style={styles.red}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setColor(
+                          `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                            Math.random() * Math.floor(256)
+                          )},${Math.floor(Math.random() * Math.floor(256))})`
+                        )
+                      }
+                      style={styles.random}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                    </TouchableOpacity>
                   </View>
                   <View style={styles.notesContent} />
                   <View>
-                    <Text style={styles.notes}>Notes</Text>
+                    <Text style={styles.text}>Notes</Text>
                     <TextInput
                       style={{
                         height: 25,
                         fontSize: 19,
                         marginTop: 3,
                       }}
+                      maxLength={20}
                       onChangeText={(text) => setNotesText(text)}
                       value={notesText}
                       placeholder="Enter notes about the task."
                     />
                   </View>
+
                   <View style={styles.seperator} />
                   <View>
-                    <Text
-                      style={{
-                        color: '#9CAAC4',
-                        fontSize: 16,
-                        fontWeight: '600',
-                      }}>
-                      Times
-                    </Text>
+                    <Text style={styles.text}>Times</Text>
                     <TouchableOpacity
                       onPress={() => _showDateTimePicker()}
                       style={{
@@ -393,14 +423,7 @@ const CreateTask = ({ navigation }) => {
                       alignItems: 'center',
                     }}>
                     <View>
-                      <Text
-                        style={{
-                          color: '#9CAAC4',
-                          fontSize: 16,
-                          fontWeight: '600',
-                        }}>
-                        Alarm
-                      </Text>
+                      <Text style={styles.text}>Alarm</Text>
                       <View
                         style={{
                           height: 25,
@@ -411,7 +434,19 @@ const CreateTask = ({ navigation }) => {
                     </View>
                     <Switch value={isAlarmSet} onValueChange={handleAlarmSet} />
                   </View>
+                  <View style={styles.seperator} />
+                  <View>
+                    <Text style={styles.text}>City</Text>
+                    <Picker
+                      selectedValue={city}
+                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
+                      {pickerCity.map((_city) => (
+                        <Picker.Item key={_city.id} label={_city.nome} value={_city.id} />
+                      ))}
+                    </Picker>
+                  </View>
                 </View>
+
                 <TouchableOpacity
                   disabled={taskText === ''}
                   style={[

@@ -1,11 +1,11 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AsyncStorage } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import moment from 'moment';
 import React, { useEffect, useState, useRef } from 'react';
 import {
+  AsyncStorage,
   View,
   Image,
   TouchableOpacity,
@@ -17,13 +17,16 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Button,
 } from 'react-native';
+
 //import * as Localization from 'expo-localization';
 import CalendarStrip from 'react-native-calendar-strip';
 //import DateTimePicker from 'react-native-modal-datetime-picker';
 
 import Task from '../components/Task';
 import { Context } from '../data/Context';
+import { getWeather } from '../services/weather';
 
 const styles = StyleSheet.create({
   taskListContent: {
@@ -153,6 +156,8 @@ const Home = ({ navigation }) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [weather, setWeather] = useState();
+
   const calenderRef = useRef(null);
 
   const [datesWhitelist, setDatesWhitelist] = useState([
@@ -213,6 +218,7 @@ const Home = ({ navigation }) => {
           return false;
         });
         if (todoLists.length !== 0) {
+          todoLists[0].todoList.sort((a, b) => new Date(a.alarm.time) - new Date(b.alarm.time));
           setTodoList(todoLists[0].todoList);
           setMarkedDate(markDot);
         } else {
@@ -287,10 +293,10 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const _getEvent = async () => {
-    if (selectedTask.alarm.createEventAsyncRes) {
+  const _getEvent = async (_selectedTask) => {
+    if (_selectedTask.alarm.createEventAsyncRes) {
       try {
-        await Calendar.getEventAsync(selectedTask.alarm.createEventAsyncRes.toString());
+        await Calendar.getEventAsync(_selectedTask.alarm.createEventAsyncRes.toString());
       } catch (error) {
         console.log(error);
       }
@@ -344,7 +350,14 @@ const Home = ({ navigation }) => {
   };
 
   useEffect(() => {
-    return () => _handleDeletePreviousDayTask();
+    const weatherForecast = async () => {
+      try {
+        const _weatherForecast = await getWeather();
+        setWeather(_weatherForecast.results.forecast[0]);
+      } catch (error) {}
+    };
+    _handleDeletePreviousDayTask();
+    weatherForecast();
   }, []);
 
   return (
@@ -365,9 +378,7 @@ const Home = ({ navigation }) => {
                   onChangeText={(text) => {
                     const prevSelectedTask = { ...selectedTask };
                     prevSelectedTask.title = text;
-                    this.setState({
-                      selectedTask: prevSelectedTask,
-                    });
+                    setSelectedTask(prevSelectedTask);
                   }}
                   value={selectedTask.title}
                   placeholder="What do you need to do?"
@@ -570,6 +581,40 @@ const Home = ({ navigation }) => {
                 setCurrentDate(selectedDate);
               }}
             />
+            <Text />
+            <Text
+              style={{
+                fontSize: 18,
+                textAlign: 'center',
+                color: '#afafaf',
+              }}>
+              {`Weather forecast: ${weather?.description} `}
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                textAlign: 'center',
+                color: '#afafaf',
+              }}>
+              {`Max: ${weather?.max} Min: ${weather?.min}`}
+            </Text>
+
+            <View>
+              <TouchableOpacity>
+                <Button
+                  title="Clean All"
+                  disabled={!todoList.length}
+                  onPress={async () => {
+                    await value.cleanAll();
+
+                    setTodoList([]);
+                    setMarkedDate([]);
+                    _updateCurrentTask(null);
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('CreateTask', {
@@ -598,10 +643,12 @@ const Home = ({ navigation }) => {
                 }}>
                 {todoList.map((item) => (
                   <TouchableOpacity
-                    onPress={() => {
-                      setSelectedTask(item);
-                      setIsModalVisible(true);
-                      _getEvent();
+                    onPress={async () => {
+                      try {
+                        await setSelectedTask(item);
+                        await _getEvent(item);
+                        await setIsModalVisible(true);
+                      } catch (error) {}
                     }}
                     key={item.key}
                     style={styles.taskListContent}>

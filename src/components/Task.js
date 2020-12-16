@@ -24,9 +24,7 @@ const Task = ({ isModalVisible, children }) => {
           styles.container,
           {
             ...Platform.select({
-              android: {
-                paddingTop: shouldMove ? 240 : null,
-              },
+              android: {},
             }),
           },
         ]}>
