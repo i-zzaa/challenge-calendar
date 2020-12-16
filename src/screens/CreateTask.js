@@ -42,17 +42,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 20,
   },
-  notes: {
-    color: '#9CAAC4',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   notesContent: {
     height: 0.5,
     width: '100%',
     backgroundColor: '#979797',
     alignSelf: 'center',
     marginVertical: 20,
+  },
+  text: {
+    color: '#9CAAC4',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   red: {
     height: 23,
@@ -94,9 +95,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     paddingLeft: 8,
     fontSize: 19,
+    marginBottom: 20,
   },
   taskContainer: {
-    height: 400,
+    height: 650,
     width: 327,
     alignSelf: 'center',
     borderRadius: 20,
@@ -260,7 +262,7 @@ const CreateTask = ({ navigation }) => {
     const _pickerCity = async () => {
       try {
         const getPickerCity = await getCity();
-        setPickerCity(getPickerCity.results);
+        setPickerCity(getPickerCity);
       } catch (error) {}
     };
     _pickerCity();
@@ -364,14 +366,7 @@ const CreateTask = ({ navigation }) => {
                     placeholder="What do you need to do?"
                     maxLength={30}
                   />
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: '#BDC6D8',
-                      marginVertical: 10,
-                    }}>
-                    Tag
-                  </Text>
+                  <Text style={styles.text}>Tag</Text>
                   <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity onPress={() => setColor('green')} style={styles.green}>
                       <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
@@ -396,7 +391,7 @@ const CreateTask = ({ navigation }) => {
                   </View>
                   <View style={styles.notesContent} />
                   <View>
-                    <Text style={styles.notes}>Notes</Text>
+                    <Text style={styles.text}>Notes</Text>
                     <TextInput
                       style={{
                         height: 25,
@@ -409,25 +404,10 @@ const CreateTask = ({ navigation }) => {
                       placeholder="Enter notes about the task."
                     />
                   </View>
-                  <View>
-                    <Text style={styles.notes}>City</Text>
-                    <Picker
-                      selectedValue={city}
-                      style={{ height: 50, width: 100 }}
-                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
-                      <Picker.Item label="" value="" />
-                    </Picker>
-                  </View>
+
                   <View style={styles.seperator} />
                   <View>
-                    <Text
-                      style={{
-                        color: '#9CAAC4',
-                        fontSize: 16,
-                        fontWeight: '600',
-                      }}>
-                      Times
-                    </Text>
+                    <Text style={styles.text}>Times</Text>
                     <TouchableOpacity
                       onPress={() => _showDateTimePicker()}
                       style={{
@@ -445,14 +425,7 @@ const CreateTask = ({ navigation }) => {
                       alignItems: 'center',
                     }}>
                     <View>
-                      <Text
-                        style={{
-                          color: '#9CAAC4',
-                          fontSize: 16,
-                          fontWeight: '600',
-                        }}>
-                        Alarm
-                      </Text>
+                      <Text style={styles.text}>Alarm</Text>
                       <View
                         style={{
                           height: 25,
@@ -463,7 +436,19 @@ const CreateTask = ({ navigation }) => {
                     </View>
                     <Switch value={isAlarmSet} onValueChange={handleAlarmSet} />
                   </View>
+                  <View style={styles.seperator} />
+                  <View>
+                    <Text style={styles.text}>City</Text>
+                    <Picker
+                      selectedValue={city}
+                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
+                      {pickerCity.map((_city) => (
+                        <Picker.Item key={_city.id} label={_city.nome} value={_city.id} />
+                      ))}
+                    </Picker>
+                  </View>
                 </View>
+
                 <TouchableOpacity
                   disabled={taskText === ''}
                   style={[
