@@ -77,7 +77,11 @@ const DataTodoStore = ({ children }) => {
   };
 
   const _updateTodo2 = async (item) => {
-    const datePresent = todo
+    if (typeof todo === 'number') {
+      await AsyncStorage.setItem('TODO', JSON.stringify([]));
+      setTodo([]);
+    }
+    const datePresent = todo.length
       ? todo.find((data) => {
           if (data.date === item.date) {
             return true;
@@ -95,13 +99,13 @@ const DataTodoStore = ({ children }) => {
       });
       try {
         await AsyncStorage.setItem('TODO', JSON.stringify(updatedTodo));
-
         setTodo(updatedTodo);
       } catch (error) {
         // Error saving data
       }
     } else {
-      const newTodo = [item];
+      const newTodo = todo.length ? todo : [];
+      newTodo.push(item);
 
       try {
         await AsyncStorage.setItem('TODO', JSON.stringify(newTodo));
