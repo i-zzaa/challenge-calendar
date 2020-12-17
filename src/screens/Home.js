@@ -1,9 +1,5 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-<<<<<<< Updated upstream
-import DateTimePicker from '@react-native-community/datetimepicker';
-=======
 import { Picker } from '@react-native-picker/picker';
->>>>>>> Stashed changes
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import moment from 'moment';
@@ -22,11 +18,8 @@ import {
   Alert,
   Platform,
   Button,
-<<<<<<< Updated upstream
-=======
-  //Picker,
   LogBox,
->>>>>>> Stashed changes
+  Keyboard,
 } from 'react-native';
 
 //import * as Localization from 'expo-localization';
@@ -36,6 +29,7 @@ import DateTimePicker from 'react-native-modal-datetime-picker';
 
 import Task from '../components/Task';
 import { Context } from '../data/Context';
+import { getCity } from '../services/city';
 import { getWeather } from '../services/weather';
 
 const styles = StyleSheet.create({
@@ -127,6 +121,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 7,
   },
+  seperator: {
+    height: 0.5,
+    width: '100%',
+    backgroundColor: '#979797',
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
   readBook: {
     height: 23,
     width: 83,
@@ -143,6 +144,13 @@ const styles = StyleSheet.create({
     fontSize: 19,
     marginBottom: 20,
   },
+  backButton: {
+    flexDirection: 'row',
+    marginTop: 10,
+    marginBottom: 40,
+    marginLeft: 10,
+    width: '100%',
+  },
   taskContainer: {
     height: 475,
     width: 327,
@@ -158,6 +166,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 5,
     padding: 22,
+  },
+  close: {
+    color: 'red',
+    fontSize: 20,
   },
   red: {
     height: 23,
@@ -207,11 +219,15 @@ const Home = ({ navigation }) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [weather, setWeather] = useState();
-
+  const [city, setCity] = useState(null);
+  const [pickerCity, setPickerCity] = useState([]);
+  const [weather, setWeather] = useState(selectedTask?.weather);
   const calenderRef = useRef(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
 
   const [closeFloatView, setloseFloatView] = useState(false);
+  const { width: vw } = Dimensions.get('window');
 
   const [datesWhitelist, setDatesWhitelist] = useState([
     {
@@ -219,6 +235,15 @@ const Home = ({ navigation }) => {
       end: moment().add(365, 'days'), // total 4 days enabled
     },
   ]);
+
+  const _keyboardDidShow = (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+    setVisibleHeight(Dimensions.get('window').height - e.endCoordinates.height - 30);
+  };
+
+  const _keyboardDidHide = () => {
+    setVisibleHeight(Dimensions.get('window').height);
+  };
 
   // const [currentDate, setCurrentDate] = useState(
   //   `${moment().format('YYYY')}-${moment().format('MM')}${moment().format('DD')}'T'00:00:00.000-00:00`
@@ -348,10 +373,10 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const _getEvent = async (_selectedTask) => {
-    if (_selectedTask.alarm.createEventAsyncRes) {
+  const _getEvent = async () => {
+    if (selectedTask.alarm.createEventAsyncRes) {
       try {
-        await Calendar.getEventAsync(_selectedTask.alarm.createEventAsyncRes.toString());
+        await Calendar.getEventAsync(selectedTask.alarm.createEventAsyncRes.toString());
       } catch (error) {
         console.log(error);
       }
@@ -410,16 +435,33 @@ const Home = ({ navigation }) => {
     setSelectedTask(prevSelectedTask);
   };
 
+  const openModal = async (item) => {
+    setSelectedTask(item, _getEvent());
+    setCity(item.city);
+    setIsModalVisible(true);
+  };
+
   useEffect(() => {
-    _handleDeletePreviousDayTask();
     const _pickerCity = async () => {
       try {
         const cities = await getCity();
+
         setPickerCity(cities);
       } catch (error) {}
     };
+    _pickerCity();
+
     _handleDeletePreviousDayTask();
-    weatherForecast();
+  }, []);
+
+  useEffect(() => {
+    //const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
+    //const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+
+    return () => {
+      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
+      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
+    };
   }, []);
 
   return (
@@ -437,13 +479,15 @@ const Home = ({ navigation }) => {
               />
               <View style={styles.taskContainer}>
                 <ScrollView>
+                  <View style={styles.backButton}>
+                    <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                      <Text style={styles.close}>x</Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <TextInput
                     style={styles.title}
-                    onChangeText={(text) => {
-                      const prevSelectedTask = { ...selectedTask };
-                      prevSelectedTask.title = text;
-                      setSelectedTask(prevSelectedTask);
-                    }}
+                    onChangeText={(text) => update('title', text)}
                     value={selectedTask.title}
                     placeholder="What do you need to do?"
                   />
@@ -487,12 +531,12 @@ const Home = ({ navigation }) => {
                         fontSize: 19,
                         marginTop: 3,
                       }}
-                      onPress={(text) => update('notes', text)}
+                      onChangeText={(text) => update('notes', text)}
                       value={selectedTask.notes}
                       placeholder="Enter notes about the task."
                     />
                   </View>
-                  <View style={styles.sepeerator} />
+                  <View style={styles.seperator} />
                   <View>
                     <Text
                       style={{
@@ -503,7 +547,7 @@ const Home = ({ navigation }) => {
                       Times
                     </Text>
                     <TouchableOpacity
-                      onPress={() => _showDateTimePicker()}
+                      onPress={_showDateTimePicker}
                       onValueChange={(value) => {
                         const prevSelectedTask = { ...selectedTask };
                         prevSelectedTask.alarm.time = value;
@@ -518,12 +562,13 @@ const Home = ({ navigation }) => {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.sepeerator} />
+                  <View style={styles.seperator} />
                   <View
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       alignItems: 'center',
+                      marginBottom: 5,
                     }}>
                     <View>
                       <Text
@@ -552,37 +597,43 @@ const Home = ({ navigation }) => {
                     <Picker
                       selectedValue={city}
                       onValueChange={async (itemValue, itemIndex) => {
+                        setCity(itemValue);
+                        update('city', itemValue);
+
                         try {
-                          setCity(itemValue);
-                          // const _weatherForecast = await getWeather( city, moment(alarmTime).format('yyyy-mm-dd'));
-                          // setWeather(_weatherForecast.results.forecast[0]);
+                          let date = new Date(selectedTask.alarm.time);
+                          date = moment(date).format('DD-MM-YYYY');
+                          const _weatherForecast = await getWeather(itemValue, date);
+
+                          update('weather', _weatherForecast);
                         } catch (error) {}
                       }}>
-                      <Picker.Item label="Selecione" value="selecione" />
+                      <Picker.Item label="Selecione" value="" />
                       {pickerCity.map((_city) => (
-                        <Picker.Item key={_city.id} label={_city.nome} value={_city.nome} />
+                        <Picker.Item key={_city.id} label={_city.name} value={_city.name} />
                       ))}
                     </Picker>
                   </View>
+                  <View style={styles.seperator} />
                   <View>
+                    <Text style={styles.text}>Weather</Text>
                     <Text
                       style={{
                         fontSize: 18,
-                        textAlign: 'center',
+                        textAlign: 'left',
                         color: '#afafaf',
+                        margin: 3,
                       }}>
-                      Weather forecast
+                      {`Description: ${weather?.description || ''}`}
                     </Text>
+
                     <Text
                       style={{
                         fontSize: 18,
-                        textAlign: 'center',
+                        textAlign: 'left',
                         color: '#afafaf',
                       }}>
-                      {/* {`Max: ${weather?.data.temperature.max} Min: ${weather?.data.temperature.min}`} */}
-                      {`Max: ${Math.trunc(Math.random() * (15 - 38) + 38)} Min: ${Math.trunc(
-                        Math.random() * (-2 - 15) + 15
-                      )}`}
+                      {`Temp: ${weather?.temp || ''}`}
                     </Text>
                   </View>
 
@@ -600,6 +651,7 @@ const Home = ({ navigation }) => {
                         } else {
                           await _deleteAlarm();
                         }
+
                         await value.updateSelectedTask({
                           date: currentDate,
                           todo: selectedTask,
@@ -695,22 +747,6 @@ const Home = ({ navigation }) => {
               }}
             />
             <Text />
-            <Text
-              style={{
-                fontSize: 18,
-                textAlign: 'center',
-                color: '#afafaf',
-              }}>
-              {`Weather forecast: ${weather?.description} `}
-            </Text>
-            <Text
-              style={{
-                fontSize: 18,
-                textAlign: 'center',
-                color: '#afafaf',
-              }}>
-              {`Max: ${weather?.max} Min: ${weather?.min}`}
-            </Text>
 
             <View>
               <TouchableOpacity>
@@ -756,15 +792,7 @@ const Home = ({ navigation }) => {
                 }}>
                 {todoList.map((item) => (
                   <TouchableOpacity
-                    onPress={async () => {
-                      try {
-                        setSelectedTask(item);
-                        _getEvent(item);
-                        setIsModalVisible(true);
-                      } catch (error) {
-                        error;
-                      }
-                    }}
+                    onPress={async () => openModal(item)}
                     key={item.key}
                     style={styles.taskListContent}>
                     <View

@@ -16,7 +16,6 @@ import {
   Switch,
   StyleSheet,
   Alert,
-  Picker,
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -154,8 +153,9 @@ const CreateTask = ({ navigation }) => {
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState({});
   const [color, setColor] = useState('');
-  const [city, setCity] = useState({});
+  const [city, setCity] = useState();
   const [pickerCity, setPickerCity] = useState([]);
+  const [weather, setWeather] = useState({});
 
   const _keyboardDidShow = (e) => {
     setKeyboardHeight(e.endCoordinates.height);
@@ -219,6 +219,7 @@ const CreateTask = ({ navigation }) => {
           title: taskText,
           notes: notesText,
           city,
+          weather,
           alarm: {
             time: alarmTime,
             isOn: isAlarmSet,
@@ -277,8 +278,8 @@ const CreateTask = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
-    keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
 
     return () => {
       Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
@@ -444,10 +445,9 @@ const CreateTask = ({ navigation }) => {
                       onValueChange={async (itemValue, itemIndex) => {
                         try {
                           setCity(itemValue);
-                          console.log(itemIndex);
 
                           let date = new Date(alarmTime);
-                          date = moment(date).format('YYYY-MM-DD');
+                          date = moment(date).format('DD-MM-YYYY');
                           const _weatherForecast = await getWeather(itemValue, date);
 
                           setWeather(_weatherForecast);
