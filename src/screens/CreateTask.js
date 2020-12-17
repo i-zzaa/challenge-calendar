@@ -63,6 +63,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 7,
   },
+  deleteButton: {
+    backgroundColor: '#ff6347',
+    width: 100,
+    height: 38,
+    alignSelf: 'center',
+    marginTop: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+  },
+  updateButton: {
+    backgroundColor: '#2E66E7',
+    width: 100,
+    height: 38,
+    alignSelf: 'center',
+    marginTop: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+    marginRight: 20,
+  },
   blue: {
     height: 23,
     width: 60,
@@ -148,57 +167,14 @@ const CreateTask = ({ navigation }) => {
   const [isAlarmSet, setIsAlarmSet] = useState(false);
   const [alarmTime, setAlarmTime] = useState(moment().format());
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
-  const [timeType, setTimeType] = useState('');
-  const [creatTodo, setCreatTodo] = useState({});
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState({});
+  const [selectedDay, setSelectedDay] = useState();
   const [color, setColor] = useState('');
   const [city, setCity] = useState();
   const [pickerCity, setPickerCity] = useState([]);
   const [weather, setWeather] = useState({});
 
-  const _keyboardDidShow = (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-    setVisibleHeight(Dimensions.get('window').height - e.endCoordinates.height - 30);
-  };
-
-  const _keyboardDidHide = () => {
-    setVisibleHeight(Dimensions.get('window').height);
-  };
-
-  const handleAlarmSet = () => setIsAlarmSet(!isAlarmSet);
-
-  const synchronizeCalendar = async (value) => {
-    const { createNewCalendar } = navigation.state.params;
-    const calendarId = await createNewCalendar();
-    try {
-      const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
-
-      setCreateEventAsyncRes(_createEventAsyncRes, () => {
-        _handleCreateEventData(value);
-      });
-    } catch (e) {
-      Alert.alert(e.message);
-    }
-  };
-
-  const _addEventsToCalendar = async (calendarId) => {
-    const event = {
-      title: taskText,
-      notes: notesText,
-      startDate: moment(alarmTime).add(0, 'm').toDate(),
-      endDate: moment(alarmTime).add(5, 'm').toDate(),
-      timeZone: Localization.timezone,
-    };
-
-    try {
-      const _createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
-
-      return _createEventAsyncRes;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [selectedTask, setSelectedTask] = useState(navigation.state.params?.selectedTask);
 
   const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
@@ -207,6 +183,7 @@ const CreateTask = ({ navigation }) => {
       currentDay
     ).format('DD')}`;
   };
+
   const _handleCreateEventData = async (value) => {
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
@@ -215,7 +192,6 @@ const CreateTask = ({ navigation }) => {
       todoList: [
         {
           key: uuid(),
-          date: getDate(),
           title: taskText,
           notes: notesText,
           city,
@@ -224,7 +200,6 @@ const CreateTask = ({ navigation }) => {
             time: alarmTime,
             isOn: isAlarmSet,
             createEventAsyncRes,
-            date: getDate(),
           },
           color,
         },
@@ -248,6 +223,12 @@ const CreateTask = ({ navigation }) => {
     navigation.navigate('Home');
   };
 
+  const handleAlarmSet = () => {
+    const prevSelectedTask = { ...selectedTask };
+    prevSelectedTask.alarm.isOn = !prevSelectedTask.alarm.isOn;
+    setSelectedTask(prevSelectedTask);
+  };
+
   const _handleDatePicked = (date) => {
     const selectedDatePicked = currentDay;
     const hour = moment(date).hour();
@@ -258,24 +239,50 @@ const CreateTask = ({ navigation }) => {
     _hideDateTimePicker();
   };
 
+  const _getCurrentDay = (date = moment().format('YYYY-MM-DD')) => {
+    const dateCurrent = {};
+    console.log(date);
+    dateCurrent[moment(date)] = {
+      selected: true,
+      selectedColor: '#2E66E7',
+    };
+
+    return dateCurrent;
+  };
+
   useEffect(() => {
+    if (selectedTask) {
+      setTaskText(selectedTask.title);
+      setNotesText(selectedTask.notes);
+      setCity(selectedTask.city);
+      setColor(selectedTask.color);
+      setIsAlarmSet(selectedTask.alarm.createEventAsyncRes);
+      setWeather(selectedTask.weather);
+    }
+  }, []);
+
+  useEffect(() => {
+    const { currentDate } = navigation.state.params;
+    const _currentDay = _getCurrentDay(currentDate);
+
     const _pickerCity = async () => {
       try {
         const cities = await getCity();
+        setCurrentDay(_currentDay);
 
         setPickerCity(cities);
       } catch (error) {}
     };
     _pickerCity();
-
-    const _todo = {};
-    _todo[`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`] = {
-      selected: true,
-      selectedColor: '#2E66E7',
-    };
-
-    setSelectedDay(_todo);
   }, []);
+
+  const _keyboardDidShow = (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+    setVisibleHeight(Dimensions.get('window').height - e.endCoordinates.height - 30);
+  };
+  const _keyboardDidHide = () => {
+    setVisibleHeight(Dimensions.get('window').height);
+  };
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
@@ -318,7 +325,7 @@ const CreateTask = ({ navigation }) => {
                     />
                   </TouchableOpacity>
 
-                  <Text style={styles.newTask}>New Task</Text>
+                  <Text style={styles.newTask}> Task</Text>
                 </View>
                 <View style={styles.calenderContainer}>
                   <CalendarList
@@ -483,31 +490,88 @@ const CreateTask = ({ navigation }) => {
                   </View>
                 </View>
 
-                <TouchableOpacity
-                  disabled={taskText === ''}
-                  style={[
-                    styles.createTaskButton,
-                    {
-                      backgroundColor: taskText === '' ? 'rgba(46, 102, 231,0.5)' : '#2E66E7',
-                    },
-                  ]}
-                  onPress={async () => {
-                    if (isAlarmSet) {
-                      await synchronizeCalendar(value);
-                    }
-                    if (!isAlarmSet) {
-                      _handleCreateEventData(value);
-                    }
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      textAlign: 'center',
-                      color: '#fff',
+                {!selectedTask ? (
+                  <TouchableOpacity
+                    disabled={taskText === ''}
+                    style={[
+                      styles.createTaskButton,
+                      {
+                        backgroundColor: taskText === '' ? 'rgba(46, 102, 231,0.5)' : '#2E66E7',
+                      },
+                    ]}
+                    onPress={async () => {
+                      if (isAlarmSet) {
+                        await synchronizeCalendar(value);
+                      }
+                      if (!isAlarmSet) {
+                        _handleCreateEventData(value);
+                      }
                     }}>
-                    ADD YOUR TASK
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        textAlign: 'center',
+                        color: '#fff',
+                      }}>
+                      ADD YOUR TASK
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        //_handleModalVisible();
+                        if (selectedTask.alarm.isOn) {
+                          await _updateAlarm();
+                        } else {
+                          await _deleteAlarm();
+                        }
+
+                        await value.updateSelectedTask({
+                          date: currentDate,
+                          todo: selectedTask,
+                        });
+                        _updateCurrentTask(currentDate);
+                        setIsModalVisible(false);
+                      }}
+                      style={styles.updateButton}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          textAlign: 'center',
+                          color: '#fff',
+                        }}>
+                        UPDATE
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        //_handleModalVisible();
+                        _deleteAlarm();
+                        await value.deleteSelectedTask({
+                          date: currentDate,
+                          todo: selectedTask,
+                        });
+                        _updateCurrentTask(currentDate);
+                        setIsModalVisible(false);
+                      }}
+                      style={styles.deleteButton}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          textAlign: 'center',
+                          color: '#fff',
+                        }}>
+                        DELETE
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </ScrollView>
             </View>
           </View>

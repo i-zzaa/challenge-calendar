@@ -73,25 +73,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 999,
   },
-  deleteButton: {
-    backgroundColor: '#ff6347',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
-  updateButton: {
-    backgroundColor: '#2E66E7',
-    width: 100,
-    height: 38,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-    marginRight: 20,
-  },
   sepeerator: {
     height: 0.5,
     width: '100%',
@@ -245,11 +226,7 @@ const Home = ({ navigation }) => {
     setVisibleHeight(Dimensions.get('window').height);
   };
 
-  // const [currentDate, setCurrentDate] = useState(
-  //   `${moment().format('YYYY')}-${moment().format('MM')}${moment().format('DD')}'T'00:00:00.000-00:00`
-  // );
-
-  const [currentDate, setCurrentDate] = useState('2020-01-01');
+  const [currentDate, setCurrentDate] = useState(moment().format('YYYY-MM-DD'));
 
   const _handleDeletePreviousDayTask = async () => {
     try {
@@ -278,14 +255,14 @@ const Home = ({ navigation }) => {
         });
 
         // await AsyncStorage.setItem('TODO', JSON.stringify(updatedList));
-        _updateCurrentTask(currentDate);
+        _updateCurrentTask();
       }
     } catch (error) {
       // Error retrieving data
     }
   };
 
-  const _updateCurrentTask = async (currentDate) => {
+  const _updateCurrentTask = async () => {
     try {
       const value = await AsyncStorage.getItem('TODO');
       if (value !== null) {
@@ -636,61 +613,6 @@ const Home = ({ navigation }) => {
                       {`Temp: ${weather?.temp || ''}`}
                     </Text>
                   </View>
-
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <TouchableOpacity
-                      onPress={async () => {
-                        //_handleModalVisible();
-                        if (selectedTask.alarm.isOn) {
-                          await _updateAlarm();
-                        } else {
-                          await _deleteAlarm();
-                        }
-
-                        await value.updateSelectedTask({
-                          date: currentDate,
-                          todo: selectedTask,
-                        });
-                        _updateCurrentTask(currentDate);
-                        setIsModalVisible(false);
-                      }}
-                      style={styles.updateButton}>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}>
-                        UPDATE
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={async () => {
-                        //_handleModalVisible();
-                        _deleteAlarm();
-                        await value.deleteSelectedTask({
-                          date: currentDate,
-                          todo: selectedTask,
-                        });
-                        _updateCurrentTask(currentDate);
-                        setIsModalVisible(false);
-                      }}
-                      style={styles.deleteButton}>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}>
-                        DELETE
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
                 </ScrollView>
               </View>
             </Task>
@@ -739,10 +661,8 @@ const Home = ({ navigation }) => {
               iconContainer={{ flex: 0.1 }}
               markedDates={markedDate}
               onDateSelected={(date) => {
-                const selectedDate = `${moment(date).format('YYYY')}-${moment(date).format(
-                  'MM'
-                )}-${moment(date).format('DD')}`;
-                _updateCurrentTask(selectedDate);
+                const selectedDate = moment(date).format('YYYY-MM-DD');
+                _updateCurrentTask();
                 setCurrentDate(selectedDate);
               }}
             />
@@ -758,7 +678,6 @@ const Home = ({ navigation }) => {
 
                     setTodoList([]);
                     setMarkedDate([]);
-                    _updateCurrentTask(null);
                   }}
                 />
               </TouchableOpacity>
@@ -792,7 +711,12 @@ const Home = ({ navigation }) => {
                 }}>
                 {todoList.map((item) => (
                   <TouchableOpacity
-                    onPress={async () => openModal(item)}
+                    onPress={() =>
+                      navigation.navigate('UpdateTask', {
+                        updateCurrentTask: _updateCurrentTask,
+                        selectedTask: item,
+                      })
+                    }
                     key={item.key}
                     style={styles.taskListContent}>
                     <View

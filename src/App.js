@@ -1,9 +1,6 @@
 import * as Permissions from 'expo-permissions';
 import React, { useEffect } from 'react';
-import { SafeAreaView, Platform } from 'react-native';
-
-//import { AppContainer } from './routes';
-
+import { Platform } from 'react-native';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 
@@ -15,6 +12,7 @@ const AppNavigator = createStackNavigator(
   {
     Home,
     CreateTask,
+    UpdateTask: CreateTask,
   },
   {
     headerMode: 'none',
@@ -41,11 +39,9 @@ const App = () => {
   }, []);
 
   return (
-    // <SafeAreaView>
     <TodoStore>
       <AppContainer />
     </TodoStore>
-    /* </SafeAreaView> */
   );
 };
 
