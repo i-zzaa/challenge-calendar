@@ -1,5 +1,9 @@
 //import AsyncStorage from '@react-native-async-storage/async-storage';
+<<<<<<< Updated upstream
 import DateTimePicker from '@react-native-community/datetimepicker';
+=======
+import { Picker } from '@react-native-picker/picker';
+>>>>>>> Stashed changes
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import moment from 'moment';
@@ -18,10 +22,16 @@ import {
   Alert,
   Platform,
   Button,
+<<<<<<< Updated upstream
+=======
+  //Picker,
+  LogBox,
+>>>>>>> Stashed changes
 } from 'react-native';
 
 //import * as Localization from 'expo-localization';
 import CalendarStrip from 'react-native-calendar-strip';
+import DateTimePicker from 'react-native-modal-datetime-picker';
 //import DateTimePicker from 'react-native-modal-datetime-picker';
 
 import Task from '../components/Task';
@@ -200,6 +210,11 @@ const Home = ({ navigation }) => {
   const [weather, setWeather] = useState();
 
   const calenderRef = useRef(null);
+<<<<<<< Updated upstream
+=======
+
+  const [closeFloatView, setloseFloatView] = useState(false);
+>>>>>>> Stashed changes
 
   const [datesWhitelist, setDatesWhitelist] = useState([
     {
@@ -208,9 +223,17 @@ const Home = ({ navigation }) => {
     },
   ]);
 
+<<<<<<< Updated upstream
   const [currentDate, setCurrentDate] = useState(
     `${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`
   );
+=======
+  // const [currentDate, setCurrentDate] = useState(
+  //   `${moment().format('YYYY')}-${moment().format('MM')}${moment().format('DD')}'T'00:00:00.000-00:00`
+  // );
+
+  const [currentDate, setCurrentDate] = useState('2020-01-01');
+>>>>>>> Stashed changes
 
   const _handleDeletePreviousDayTask = async () => {
     try {
@@ -397,10 +420,25 @@ const Home = ({ navigation }) => {
   };
 
   useEffect(() => {
+<<<<<<< Updated upstream
     const weatherForecast = async () => {
       try {
         const _weatherForecast = await getWeather();
         setWeather(_weatherForecast.results.forecast[0]);
+=======
+    //   const weatherForecast = async () => {
+    //     try {
+    //       const _weatherForecast = await getWeather();
+    //       setWeather(_weatherForecast.results.forecast[0]);
+    //     } catch (error) {}
+    //   };
+    _handleDeletePreviousDayTask();
+    //   weatherForecast();
+    const _pickerCity = async () => {
+      try {
+        const cities = await getCity();
+        setPickerCity(cities);
+>>>>>>> Stashed changes
       } catch (error) {}
     };
     _handleDeletePreviousDayTask();
@@ -421,6 +459,7 @@ const Home = ({ navigation }) => {
                 value={moment(currentDate).format("YYYY-MM-DD'T'HH:mm:ss.sssZ")}
               />
               <View style={styles.taskContainer}>
+<<<<<<< Updated upstream
                 <TextInput
                   style={styles.title}
                   onChangeText={(text) => {
@@ -465,50 +504,44 @@ const Home = ({ navigation }) => {
                     }}>
                     Notes
                   </Text>
+=======
+                <ScrollView>
+>>>>>>> Stashed changes
                   <TextInput
-                    style={{
-                      height: 25,
-                      fontSize: 19,
-                      marginTop: 3,
-                    }}
-                    onPress={(text) => update('notes', text)}
-                    value={selectedTask.notes}
-                    placeholder="Enter notes about the task."
-                  />
-                </View>
-                <View style={styles.sepeerator} />
-                <View>
-                  <Text
-                    style={{
-                      color: '#9CAAC4',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}>
-                    Times
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => _showDateTimePicker()}
-                    onValueChange={(value) => {
+                    style={styles.title}
+                    onChangeText={(text) => {
                       const prevSelectedTask = { ...selectedTask };
-                      prevSelectedTask.alarm.time = value;
+                      prevSelectedTask.title = text;
                       setSelectedTask(prevSelectedTask);
                     }}
-                    style={{
-                      height: 25,
-                      marginTop: 3,
-                    }}>
-                    <Text style={{ fontSize: 19 }}>
-                      {moment(selectedTask.alarm.time).format('h:mm A')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.sepeerator} />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
+                    value={selectedTask.title}
+                    placeholder="What do you need to do?"
+                  />
+                  <Text style={styles.text}>Tag</Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity onPress={() => update('color', 'green')} style={styles.green}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => update('color', 'blue')} style={styles.blue}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => update('color', 'red')} style={styles.red}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        update(
+                          'color',
+                          `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                            Math.random() * Math.floor(256)
+                          )},${Math.floor(Math.random() * Math.floor(256))})`
+                        )
+                      }
+                      style={styles.random}>
+                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.notesContent} />
                   <View>
                     <Text
                       style={{
@@ -516,9 +549,36 @@ const Home = ({ navigation }) => {
                         fontSize: 16,
                         fontWeight: '600',
                       }}>
-                      Alarm
+                      Notes
                     </Text>
-                    <View
+                    <TextInput
+                      style={{
+                        height: 25,
+                        fontSize: 19,
+                        marginTop: 3,
+                      }}
+                      onPress={(text) => update('notes', text)}
+                      value={selectedTask.notes}
+                      placeholder="Enter notes about the task."
+                    />
+                  </View>
+                  <View style={styles.sepeerator} />
+                  <View>
+                    <Text
+                      style={{
+                        color: '#9CAAC4',
+                        fontSize: 16,
+                        fontWeight: '600',
+                      }}>
+                      Times
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => _showDateTimePicker()}
+                      onValueChange={(value) => {
+                        const prevSelectedTask = { ...selectedTask };
+                        prevSelectedTask.alarm.time = value;
+                        setSelectedTask(prevSelectedTask);
+                      }}
                       style={{
                         height: 25,
                         marginTop: 3,
@@ -526,8 +586,37 @@ const Home = ({ navigation }) => {
                       <Text style={{ fontSize: 19 }}>
                         {moment(selectedTask.alarm.time).format('h:mm A')}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
+                  <View style={styles.sepeerator} />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}>
+                    <View>
+                      <Text
+                        style={{
+                          color: '#9CAAC4',
+                          fontSize: 16,
+                          fontWeight: '600',
+                        }}>
+                        Alarm
+                      </Text>
+                      <View
+                        style={{
+                          height: 25,
+                          marginTop: 3,
+                        }}>
+                        <Text style={{ fontSize: 19 }}>
+                          {moment(selectedTask.alarm.time).format('h:mm A')}
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch value={selectedTask.alarm.isOn} onValueChange={handleAlarmSet} />
+                  </View>
+<<<<<<< Updated upstream
                   <Switch value={selectedTask.alarm.isOn} onValueChange={handleAlarmSet} />
                 </View>
                 <View
@@ -551,14 +640,36 @@ const Home = ({ navigation }) => {
                       _updateCurrentTask(currentDate);
                     }}
                     style={styles.updateButton}>
+=======
+                  <View style={styles.seperator} />
+                  <View>
+                    <Text style={styles.text}>City</Text>
+                    <Picker
+                      selectedValue={city}
+                      onValueChange={async (itemValue, itemIndex) => {
+                        try {
+                          setCity(itemValue);
+                          // const _weatherForecast = await getWeather( city, moment(alarmTime).format('yyyy-mm-dd'));
+                          // setWeather(_weatherForecast.results.forecast[0]);
+                        } catch (error) {}
+                      }}>
+                      <Picker.Item label="Selecione" value="selecione" />
+                      {pickerCity.map((_city) => (
+                        <Picker.Item key={_city.id} label={_city.nome} value={_city.nome} />
+                      ))}
+                    </Picker>
+                  </View>
+                  <View>
+>>>>>>> Stashed changes
                     <Text
                       style={{
                         fontSize: 18,
                         textAlign: 'center',
-                        color: '#fff',
+                        color: '#afafaf',
                       }}>
-                      UPDATE
+                      Weather forecast
                     </Text>
+<<<<<<< Updated upstream
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={async () => {
@@ -571,16 +682,80 @@ const Home = ({ navigation }) => {
                       _updateCurrentTask(currentDate);
                     }}
                     style={styles.deleteButton}>
+=======
+>>>>>>> Stashed changes
                     <Text
                       style={{
                         fontSize: 18,
                         textAlign: 'center',
-                        color: '#fff',
+                        color: '#afafaf',
                       }}>
-                      DELETE
+                      {/* {`Max: ${weather?.data.temperature.max} Min: ${weather?.data.temperature.min}`} */}
+                      {`Max: ${Math.trunc(Math.random() * (15 - 38) + 38)} Min: ${Math.trunc(
+                        Math.random() * (-2 - 15) + 15
+                      )}`}
                     </Text>
+<<<<<<< Updated upstream
                   </TouchableOpacity>
                 </View>
+=======
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        //_handleModalVisible();
+                        if (selectedTask.alarm.isOn) {
+                          await _updateAlarm();
+                        } else {
+                          await _deleteAlarm();
+                        }
+                        await value.updateSelectedTask({
+                          date: currentDate,
+                          todo: selectedTask,
+                        });
+                        _updateCurrentTask(currentDate);
+                        setIsModalVisible(false);
+                      }}
+                      style={styles.updateButton}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          textAlign: 'center',
+                          color: '#fff',
+                        }}>
+                        UPDATE
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        //_handleModalVisible();
+                        _deleteAlarm();
+                        await value.deleteSelectedTask({
+                          date: currentDate,
+                          todo: selectedTask,
+                        });
+                        _updateCurrentTask(currentDate);
+                        setIsModalVisible(false);
+                      }}
+                      style={styles.deleteButton}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          textAlign: 'center',
+                          color: '#fff',
+                        }}>
+                        DELETE
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+>>>>>>> Stashed changes
               </View>
             </Task>
           )}
@@ -699,10 +874,19 @@ const Home = ({ navigation }) => {
                   <TouchableOpacity
                     onPress={async () => {
                       try {
+<<<<<<< Updated upstream
                         await setSelectedTask(item);
                         await _getEvent(item);
                         await setIsModalVisible(true);
                       } catch (error) {}
+=======
+                        setSelectedTask(item);
+                        _getEvent(item);
+                        setIsModalVisible(true);
+                      } catch (error) {
+                        error;
+                      }
+>>>>>>> Stashed changes
                     }}
                     key={item.key}
                     style={styles.taskListContent}>

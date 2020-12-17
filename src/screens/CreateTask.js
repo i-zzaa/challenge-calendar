@@ -1,3 +1,4 @@
+import { Picker } from '@react-native-picker/picker';
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import * as Localization from 'expo-localization';
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   taskContainer: {
-    height: 650,
+    height: 800,
     width: 327,
     alignSelf: 'center',
     borderRadius: 20,
@@ -153,7 +154,7 @@ const CreateTask = ({ navigation }) => {
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState({});
   const [color, setColor] = useState('');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState({});
   const [pickerCity, setPickerCity] = useState([]);
 
   const _keyboardDidShow = (e) => {
@@ -259,8 +260,14 @@ const CreateTask = ({ navigation }) => {
   useEffect(() => {
     const _pickerCity = async () => {
       try {
+<<<<<<< Updated upstream
         const getPickerCity = await getCity();
         setPickerCity(getPickerCity);
+=======
+        const cities = await getCity();
+
+        setPickerCity(cities);
+>>>>>>> Stashed changes
       } catch (error) {}
     };
     _pickerCity();
@@ -439,12 +446,55 @@ const CreateTask = ({ navigation }) => {
                     <Text style={styles.text}>City</Text>
                     <Picker
                       selectedValue={city}
+<<<<<<< Updated upstream
                       onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
                       {pickerCity.map((_city) => (
                         <Picker.Item key={_city.id} label={_city.nome} value={_city.id} />
                       ))}
                     </Picker>
                   </View>
+=======
+                      onValueChange={async (itemValue, itemIndex) => {
+                        try {
+                          setCity(itemValue);
+                          console.log(itemIndex);
+
+                          let date = new Date(alarmTime);
+                          date = moment(date).format('YYYY-MM-DD');
+                          const _weatherForecast = await getWeather(itemValue, date);
+
+                          setWeather(_weatherForecast);
+                        } catch (error) {}
+                      }}>
+                      <Picker.Item label="Selecione" value="selecione" />
+                      {pickerCity.map((_city) => (
+                        <Picker.Item key={_city.id} label={_city.name} value={_city.name} />
+                      ))}
+                    </Picker>
+                  </View>
+                  <View style={styles.seperator} />
+                  <View>
+                    <Text style={styles.text}>Weather</Text>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        textAlign: 'left',
+                        color: '#afafaf',
+                        margin: 3,
+                      }}>
+                      {`Description: ${weather?.description || ''}`}
+                    </Text>
+
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        textAlign: 'left',
+                        color: '#afafaf',
+                      }}>
+                      {`Temp: ${weather?.temp || ''}`}
+                    </Text>
+                  </View>
+>>>>>>> Stashed changes
                 </View>
 
                 <TouchableOpacity
