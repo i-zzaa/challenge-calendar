@@ -260,14 +260,9 @@ const CreateTask = ({ navigation }) => {
   useEffect(() => {
     const _pickerCity = async () => {
       try {
-<<<<<<< Updated upstream
-        const getPickerCity = await getCity();
-        setPickerCity(getPickerCity);
-=======
         const cities = await getCity();
 
         setPickerCity(cities);
->>>>>>> Stashed changes
       } catch (error) {}
     };
     _pickerCity();
@@ -446,14 +441,6 @@ const CreateTask = ({ navigation }) => {
                     <Text style={styles.text}>City</Text>
                     <Picker
                       selectedValue={city}
-<<<<<<< Updated upstream
-                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
-                      {pickerCity.map((_city) => (
-                        <Picker.Item key={_city.id} label={_city.nome} value={_city.id} />
-                      ))}
-                    </Picker>
-                  </View>
-=======
                       onValueChange={async (itemValue, itemIndex) => {
                         try {
                           setCity(itemValue);
@@ -494,7 +481,6 @@ const CreateTask = ({ navigation }) => {
                       {`Temp: ${weather?.temp || ''}`}
                     </Text>
                   </View>
->>>>>>> Stashed changes
                 </View>
 
                 <TouchableOpacity
