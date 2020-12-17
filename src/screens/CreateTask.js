@@ -1,9 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
-import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
-import * as Localization from 'expo-localization';
 import moment from 'moment';
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   Image,
@@ -15,7 +13,6 @@ import {
   Keyboard,
   Switch,
   StyleSheet,
-  Alert,
 } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -274,24 +271,6 @@ const CreateTask = ({ navigation }) => {
       } catch (error) {}
     };
     _pickerCity();
-  }, []);
-
-  const _keyboardDidShow = (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-    setVisibleHeight(Dimensions.get('window').height - e.endCoordinates.height - 30);
-  };
-  const _keyboardDidHide = () => {
-    setVisibleHeight(Dimensions.get('window').height);
-  };
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
-
-    return () => {
-      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
-      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
-    };
   }, []);
 
   return (
