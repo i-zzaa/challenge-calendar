@@ -10,7 +10,6 @@ import {
   Dimensions,
   ScrollView,
   TextInput,
-  Keyboard,
   Switch,
   StyleSheet,
 } from 'react-native';
@@ -159,7 +158,6 @@ const CreateTask = ({ navigation }) => {
   const [currentDay, setCurrentDay] = useState(moment().format());
   const [taskText, setTaskText] = useState('');
   const [notesText, setNotesText] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(Dimensions.get('window').height);
   const [isAlarmSet, setIsAlarmSet] = useState(false);
   const [alarmTime, setAlarmTime] = useState(moment().format());
@@ -175,11 +173,7 @@ const CreateTask = ({ navigation }) => {
 
   const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
-  const getDate = () => {
-    return `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-      currentDay
-    ).format('DD')}`;
-  };
+  const getDate = () => moment(currentDay).format('YYYY-MM-DD');
 
   const _handleCreateEventData = async (value) => {
     const { updateCurrentTask, currentDate } = navigation.state.params;
