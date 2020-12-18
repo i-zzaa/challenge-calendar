@@ -119,6 +119,7 @@ const Home = ({ navigation }) => {
       if (value !== null) {
         const todoList = JSON.parse(value);
         const markDot = todoList.map((item) => item.markedDot);
+        debugger;
         const todoLists = await todoList.filter((item) => {
           if (date === item.date) {
             return true;
@@ -141,7 +142,6 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     _updateCurrentTask();
-
     _handleDeletePreviousDayTask();
   }, []);
 
@@ -193,8 +193,8 @@ const Home = ({ navigation }) => {
             markedDates={markedDate}
             onDateSelected={(date) => {
               const selectedDate = moment(date).format('YYYY-MM-DD');
-              setCurrentDate(selectedDate);
               _updateCurrentTask(selectedDate);
+              setCurrentDate(selectedDate);
             }}
           />
           <Text />

@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import Constants from 'expo-constants';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, callback } from 'react';
 import {
   Text,
   Image,
@@ -161,7 +161,13 @@ const CreateTask = ({ navigation }) => {
   const [isAlarmSet, setIsAlarmSet] = useState(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState();
+  const [selectedDay, setSelectedDay] = useState({
+    [moment(currentDay).format('YYYY-MM-DD')]: {
+      selected: true,
+      selectedColor: '#2E66E7',
+    },
+  });
+
   const [pickerCity, setPickerCity] = useState([]);
 
   const [selectedTask, setSelectedTask] = useState(
@@ -213,7 +219,7 @@ const CreateTask = ({ navigation }) => {
         },
       ],
       markedDot: {
-        date: selectedDay,
+        date: currentDay,
         dots: [
           {
             key: uuid(),
@@ -358,15 +364,14 @@ const CreateTask = ({ navigation }) => {
                     pagingEnabled
                     calendarWidth={350}
                     onDayPress={async (day) => {
-                      const selected = await _getCurrentDay(day.dateString);
-                      debugger;
-                      setSelectedDay(selected);
-
-                      setCurrentDay(day.dateString);
                       const prevSelectTask = { ...selectedTask };
                       prevSelectTask.alarm.time = day.dateString;
                       prevSelectTask.date = moment(day.dateString).format('YYYY-MM-DD');
 
+                      const selected = await _getCurrentDay(day.dateString);
+                      setSelectedDay(selected);
+
+                      setCurrentDay(day.dateString);
                       setSelectedTask(prevSelectTask);
                     }}
                     monthFormat="yyyy MMMM"
