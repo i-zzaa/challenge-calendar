@@ -18,6 +18,10 @@ import CalendarStrip from 'react-native-calendar-strip';
 import { Context } from '../data/Context';
 
 const styles = StyleSheet.create({
+  home: {
+    flex: 1,
+    paddingTop: Constants.statusBarHeight,
+  },
   taskListContent: {
     height: 100,
     width: 327,
@@ -66,6 +70,68 @@ const styles = StyleSheet.create({
     fontSize: 19,
     marginBottom: 20,
   },
+  calendarStrip: {
+    height: 150,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  black: { color: '#000000' },
+  highlightDateNumberStyle: {
+    color: '#fff',
+    backgroundColor: '#2E66E7',
+    marginTop: 10,
+    height: 35,
+    width: 35,
+    textAlign: 'center',
+    borderRadius: 17.5,
+    overflow: 'hidden',
+    paddingTop: 6,
+    fontWeight: '400',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plus: {
+    height: 30,
+    width: 30,
+  },
+  container: {
+    width: '100%',
+    height: Dimensions.get('window').height - 170,
+  },
+  contentContainerStyle: {
+    paddingBottom: 20,
+  },
+  containerTask: {
+    marginLeft: 13,
+  },
+  containerTask2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  task: {
+    color: '#554A4C',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  task1: {
+    flexDirection: 'row',
+    marginLeft: 20,
+  },
+  taskDate: {
+    color: '#BBBBBB',
+    fontSize: 14,
+    marginRight: 5,
+  },
+  taskItem: {
+    color: '#BBBBBB',
+    fontSize: 14,
+  },
+  dateNumberStyle: { color: '#000000', paddingTop: 10 },
+  dateNameStyle: { color: '#BBBBBB' },
+  highlightDateNameStyle: { color: '#2E66E7' },
+  disabledDateNameStyle: { color: 'grey' },
+  disabledDateNumberStyle: { color: 'grey', paddingTop: 10 },
+  iconContainer: { flex: 0.1 },
 });
 
 const Home = ({ navigation }) => {
@@ -147,11 +213,7 @@ const Home = ({ navigation }) => {
   return (
     <Context.Consumer>
       {(value) => (
-        <View
-          style={{
-            flex: 1,
-            paddingTop: Constants.statusBarHeight,
-          }}>
+        <View style={styles.home}>
           <CalendarStrip
             ref={calenderRef}
             calendarAnimation={{ type: 'sequence', duration: 30 }}
@@ -160,35 +222,18 @@ const Home = ({ navigation }) => {
               duration: 200,
               highlightColor: '#ffffff',
             }}
-            style={{
-              height: 150,
-              paddingTop: 20,
-              paddingBottom: 20,
-            }}
-            calendarHeaderStyle={{ color: '#000000' }}
-            dateNumberStyle={{ color: '#000000', paddingTop: 10 }}
-            dateNameStyle={{ color: '#BBBBBB' }}
-            highlightDateNumberStyle={{
-              color: '#fff',
-              backgroundColor: '#2E66E7',
-              marginTop: 10,
-              height: 35,
-              width: 35,
-              textAlign: 'center',
-              borderRadius: 17.5,
-              overflow: 'hidden',
-              paddingTop: 6,
-              fontWeight: '400',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            highlightDateNameStyle={{ color: '#2E66E7' }}
-            disabledDateNameStyle={{ color: 'grey' }}
-            disabledDateNumberStyle={{ color: 'grey', paddingTop: 10 }}
+            style={styles.calendarStrip}
+            calendarHeaderStyle={styles.black}
+            dateNumberStyle={styles.dateNumberStyle}
+            dateNameStyle={styles.dateNameStyle}
+            highlightDateNumberStyle={styles.highlightDateNumberStyle}
+            highlightDateNameStyle={styles.highlightDateNameStyle}
+            disabledDateNameStyle={styles.disabledDateNameStyle}
+            disabledDateNumberStyle={styles.disabledDateNumberStyle}
             datesWhitelist={datesWhitelist}
             iconLeft={require('../../assets/left-arrow.png')}
             iconRight={require('../../assets/right-arrow.png')}
-            iconContainer={{ flex: 0.1 }}
+            iconContainer={styles.iconContainer}
             markedDates={markedDate}
             onDateSelected={(date) => {
               const selectedDate = moment(date).format('YYYY-MM-DD');
@@ -222,23 +267,10 @@ const Home = ({ navigation }) => {
               })
             }
             style={styles.viewTask}>
-            <Image
-              source={require('../../assets/plus.png')}
-              style={{
-                height: 30,
-                width: 30,
-              }}
-            />
+            <Image source={require('../../assets/plus.png')} style={styles.plus} />
           </TouchableOpacity>
-          <View
-            style={{
-              width: '100%',
-              height: Dimensions.get('window').height - 170,
-            }}>
-            <ScrollView
-              contentContainerStyle={{
-                paddingBottom: 20,
-              }}>
+          <View style={styles.container}>
+            <ScrollView contentContainerStyle={styles.contentContainerStyle}>
               {todoList.map((item) => (
                 <TouchableOpacity
                   onPress={() =>
@@ -251,15 +283,8 @@ const Home = ({ navigation }) => {
                   }
                   key={item.key}
                   style={styles.taskListContent}>
-                  <View
-                    style={{
-                      marginLeft: 13,
-                    }}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}>
+                  <View style={styles.containerTask}>
+                    <View style={styles.containerTask2}>
                       <View
                         style={{
                           height: 12,
@@ -269,36 +294,16 @@ const Home = ({ navigation }) => {
                           marginRight: 8,
                         }}
                       />
-                      <Text
-                        style={{
-                          color: '#554A4C',
-                          fontSize: 20,
-                          fontWeight: '700',
-                        }}>
-                        {item.title}
-                      </Text>
+                      <Text style={styles.task}>{item.title}</Text>
                     </View>
                     <View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginLeft: 20,
-                        }}>
-                        <Text
-                          style={{
-                            color: '#BBBBBB',
-                            fontSize: 14,
-                            marginRight: 5,
-                          }}>{`${moment(item.alarm.time).format('YYYY')}/${moment(
-                          item.alarm.time
-                        ).format('MM')}/${moment(item.alarm.time).format('DD')}`}</Text>
-                        <Text
-                          style={{
-                            color: '#BBBBBB',
-                            fontSize: 14,
-                          }}>
-                          {item.notes}
-                        </Text>
+                      <View style={styles.task1}>
+                        <Text style={styles.taskDate}>{`${moment(item.alarm.time).format(
+                          'YYYY'
+                        )}/${moment(item.alarm.time).format('MM')}/${moment(item.alarm.time).format(
+                          'DD'
+                        )}`}</Text>
+                        <Text style={styles.taskItem}>{item.notes}</Text>
                       </View>
                     </View>
                   </View>

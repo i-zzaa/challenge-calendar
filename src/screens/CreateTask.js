@@ -158,6 +158,45 @@ const styles = StyleSheet.create({
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#eaeef7',
   },
+  containerTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
+  tag: { textAlign: 'center', fontSize: 14 },
+  time: {
+    height: 25,
+    marginTop: 3,
+    fontSize: 19,
+  },
+  alarm: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  weather: {
+    fontSize: 18,
+    textAlign: 'left',
+    color: '#afafaf',
+    margin: 3,
+  },
+  addTask: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#fff',
+  },
+  containerBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  updateTask: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#fff',
+  },
 });
 
 const CreateTask = ({ navigation }) => {
@@ -404,21 +443,21 @@ const CreateTask = ({ navigation }) => {
                   <View style={styles.seperator} />
                   <View>
                     <Text style={styles.text}>Tag</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                    <View style={styles.containerTag}>
                       <TouchableOpacity
                         onPress={() => setSelectedTask({ ...selectedTask, color: 'green' })}
                         style={styles.green}>
-                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                        <Text style={styles.tag}>Green</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => setSelectedTask({ ...selectedTask, color: 'blue' })}
                         style={styles.blue}>
-                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                        <Text style={styles.tag}>Blue</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => setSelectedTask({ ...selectedTask, color: 'red' })}
                         style={styles.red}>
-                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                        <Text style={styles.tag}>Red</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() =>
@@ -430,7 +469,7 @@ const CreateTask = ({ navigation }) => {
                           })
                         }
                         style={styles.random}>
-                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                        <Text style={styles.tag}>Random</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -439,11 +478,7 @@ const CreateTask = ({ navigation }) => {
                   <View>
                     <Text style={styles.text}>Notes</Text>
                     <TextInput
-                      style={{
-                        height: 25,
-                        fontSize: 19,
-                        marginTop: 3,
-                      }}
+                      style={styles.time}
                       maxLength={20}
                       onChangeText={(text) => setSelectedTask({ ...selectedTask, notes: text })}
                       value={selectedTask.notes}
@@ -462,32 +497,16 @@ const CreateTask = ({ navigation }) => {
                         prevSelectedTask.alarm.times = time;
                         setSelectedTask(prevSelectedTask);
                       }}
-                      style={{
-                        height: 25,
-                        marginTop: 3,
-                      }}>
-                      <Text style={{ fontSize: 19 }}>
-                        {moment(selectedTask.alarm.time).format('h:mm A')}
-                      </Text>
+                      style={styles.time}>
+                      <Text>{moment(selectedTask.alarm.time).format('h:mm A')}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.seperator} />
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}>
+                  <View style={styles.alarm}>
                     <View>
                       <Text style={styles.text}>Alarm</Text>
-                      <View
-                        style={{
-                          height: 25,
-                          marginTop: 3,
-                        }}>
-                        <Text style={{ fontSize: 19 }}>
-                          {moment(selectedTask.alarm.time).format('h:mm A')}
-                        </Text>
+                      <View style={styles.time}>
+                        <Text>{moment(selectedTask.alarm.time).format('h:mm A')}</Text>
                       </View>
                     </View>
                     <Switch
@@ -531,24 +550,11 @@ const CreateTask = ({ navigation }) => {
                   <View style={styles.seperator} />
                   <View>
                     <Text style={styles.text}>Weather</Text>
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        textAlign: 'left',
-                        color: '#afafaf',
-                        margin: 3,
-                      }}>
+                    <Text style={styles.weather}>
                       {`Description: ${selectedTask.weather.description}`}
                     </Text>
 
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        textAlign: 'left',
-                        color: '#afafaf',
-                      }}>
-                      {`Temp: ${selectedTask.weather.temp}`}
-                    </Text>
+                    <Text style={styles.weather}>{`Temp: ${selectedTask.weather.temp}`}</Text>
                   </View>
                 </View>
 
@@ -570,22 +576,10 @@ const CreateTask = ({ navigation }) => {
                         _handleCreateEventData(value);
                       }
                     }}>
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        textAlign: 'center',
-                        color: '#fff',
-                      }}>
-                      ADD YOUR TASK
-                    </Text>
+                    <Text style={styles.addTask}>ADD YOUR TASK</Text>
                   </TouchableOpacity>
                 ) : (
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
+                  <View style={styles.containerBtn}>
                     <TouchableOpacity
                       onPress={async () => {
                         const { updateCurrentTask, currentDate } = navigation.state.params;
@@ -603,14 +597,7 @@ const CreateTask = ({ navigation }) => {
                         navigation.navigate('Home');
                       }}
                       style={styles.updateButton}>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}>
-                        UPDATE
-                      </Text>
+                      <Text style={styles.updateTask}>UPDATE</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={async () => {
@@ -625,14 +612,7 @@ const CreateTask = ({ navigation }) => {
                         navigation.navigate('Home');
                       }}
                       style={styles.deleteButton}>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          textAlign: 'center',
-                          color: '#fff',
-                        }}>
-                        DELETE
-                      </Text>
+                      <Text style={styles.updateTask}>DELETE</Text>
                     </TouchableOpacity>
                   </View>
                 )}
