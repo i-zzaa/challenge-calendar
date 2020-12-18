@@ -26,6 +26,7 @@ expo start
 
 
 ![Alt Text](https://github.com/i-zzaa/challenge-calendar/blob/develop/assets/gif.gif)
+![Alt Text](https://github.com/i-zzaa/challenge-calendar/blob/develop/assets/gif2.gif)
 
 ## Tasks
 
