@@ -172,7 +172,7 @@ const CreateTask = ({ navigation }) => {
           notes: '',
           city: '',
           color: '',
-          date: currentDay,
+          date: navigation.state.params.date,
           alarm: {
             time: currentDay,
             isOn: false,
@@ -231,7 +231,7 @@ const CreateTask = ({ navigation }) => {
   };
 
   const _handleDatePicked = (date) => {
-    const selectedDatePicked = currentDay;
+    const selectedDatePicked = selectedTask.alarm.time;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
     const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
@@ -247,7 +247,7 @@ const CreateTask = ({ navigation }) => {
 
   const _getCurrentDay = (date = moment().format('YYYY-MM-DD')) => {
     const dateCurrent = {};
-    dateCurrent[moment(date)] = {
+    dateCurrent[moment(date).format('YYYY-MM-DD')] = {
       selected: true,
       selectedColor: '#2E66E7',
     };
@@ -299,14 +299,13 @@ const CreateTask = ({ navigation }) => {
   useEffect(() => {
     const { currentDate, updateCurrentTask } = navigation.state.params;
     const _date = _getCurrentDay(currentDate);
+    setCurrentDay(currentDate);
+    updateCurrentTask(currentDate);
+    setSelectedDay(_date);
 
     const _pickerCity = async () => {
       try {
         const cities = await getCity();
-        setSelectedDay(_date);
-        setCurrentDay(currentDate);
-        updateCurrentTask(currentDate);
-
         setPickerCity(cities);
       } catch (error) {}
     };
@@ -358,16 +357,13 @@ const CreateTask = ({ navigation }) => {
                     pastScrollRange={0}
                     pagingEnabled
                     calendarWidth={350}
-                    onDayPress={(day) => {
-                      const _selected = {};
-                      const date = day.dateString;
-                      _selected[date] = {
-                        selected: true,
-                        selectedColor: '#2E66E7',
-                      };
+                    onDayPress={async (day) => {
+                      const selected = await _getCurrentDay(day.dateString);
+                      debugger;
+                      setSelectedDay(selected);
 
                       setCurrentDay(day.dateString);
-                      const prevSelectTask = { ...setSelectedTask };
+                      const prevSelectTask = { ...selectedTask };
                       prevSelectTask.alarm.time = day.dateString;
                       prevSelectTask.date = moment(day.dateString).format('YYYY-MM-DD');
 
