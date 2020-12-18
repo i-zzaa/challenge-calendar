@@ -168,6 +168,7 @@ const CreateTask = ({ navigation }) => {
   const [city, setCity] = useState();
   const [pickerCity, setPickerCity] = useState([]);
   const [weather, setWeather] = useState({});
+  const [date, setDate] = useState();
 
   const [selectedTask, setSelectedTask] = useState(navigation.state.params?.selectedTask);
 
@@ -241,6 +242,18 @@ const CreateTask = ({ navigation }) => {
     return dateCurrent;
   };
 
+  const _deleteAlarm = async () => {
+    try {
+      await Calendar.deleteEventAsync(selectedTask.alarm.createEventAsyncRes);
+
+      const updateTask = { ...selectedTask };
+      updateTask.alarm.createEventAsyncRes = '';
+      selectedTask(updateTask);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (selectedTask) {
       setTaskText(selectedTask.title);
@@ -253,13 +266,14 @@ const CreateTask = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    const { currentDate } = navigation.state.params;
-    const _currentDay = _getCurrentDay(currentDate);
+    const { currentDate, updateCurrentTask } = navigation.state.params;
+    const _date = _getCurrentDay(currentDate);
 
     const _pickerCity = async () => {
       try {
         const cities = await getCity();
-        setCurrentDay(_currentDay);
+        setCurrentDay(_date);
+        updateCurrentTask(currentDate);
 
         setPickerCity(cities);
       } catch (error) {}
@@ -498,19 +512,14 @@ const CreateTask = ({ navigation }) => {
                     }}>
                     <TouchableOpacity
                       onPress={async () => {
-                        //_handleModalVisible();
-                        if (selectedTask.alarm.isOn) {
-                          await _updateAlarm();
-                        } else {
-                          await _deleteAlarm();
-                        }
+                        const { updateCurrentTask } = navigation.params;
+                        await _updateAlarm();
 
                         await value.updateSelectedTask({
-                          date: currentDate,
+                          date,
                           todo: selectedTask,
                         });
-                        _updateCurrentTask(currentDate);
-                        setIsModalVisible(false);
+                        await updateCurrentTask(date);
                       }}
                       style={styles.updateButton}>
                       <Text
@@ -524,14 +533,14 @@ const CreateTask = ({ navigation }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={async () => {
-                        //_handleModalVisible();
+                        const { updateCurrentTask } = navigation.params;
+
                         _deleteAlarm();
                         await value.deleteSelectedTask({
-                          date: currentDate,
+                          date,
                           todo: selectedTask,
                         });
-                        _updateCurrentTask(currentDate);
-                        setIsModalVisible(false);
+                        await updateCurrentTask(date);
                       }}
                       style={styles.deleteButton}>
                       <Text

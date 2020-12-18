@@ -89,9 +89,7 @@ const Home = ({ navigation }) => {
 
       if (value !== null) {
         const todoList = JSON.parse(value);
-        const todayDate = `${moment().format('YYYY')}-${moment().format('MM')}-${moment().format(
-          'DD'
-        )}`;
+        const todayDate = `${moment().format('YYYY-MM-DD')}`;
         const checkDate = moment(todayDate);
         await todoList.filter((item) => {
           const currDate = moment(item.date);
@@ -117,14 +115,14 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const _updateCurrentTask = async () => {
+  const _updateCurrentTask = async (date = currentDate) => {
     try {
       const value = await AsyncStorage.getItem('TODO');
       if (value !== null) {
         const todoList = JSON.parse(value);
         const markDot = todoList.map((item) => item.markedDot);
-        const todoLists = todoList.filter((item) => {
-          if (currentDate === item.date) {
+        const todoLists = await todoList.filter((item) => {
+          if (date === item.date) {
             return true;
           }
           return false;
@@ -135,7 +133,7 @@ const Home = ({ navigation }) => {
           setMarkedDate(markDot);
         } else {
           setTodoList([]);
-          setMarkedDate(markDot);
+          setMarkedDate([]);
         }
       }
     } catch (error) {
@@ -186,6 +184,8 @@ const Home = ({ navigation }) => {
   };
 
   useEffect(() => {
+    _updateCurrentTask();
+
     _handleDeletePreviousDayTask();
   }, []);
 
@@ -238,8 +238,8 @@ const Home = ({ navigation }) => {
               markedDates={markedDate}
               onDateSelected={(date) => {
                 const selectedDate = moment(date).format('YYYY-MM-DD');
-                _updateCurrentTask();
                 setCurrentDate(selectedDate);
+                _updateCurrentTask(selectedDate);
               }}
             />
             <Text />
@@ -291,6 +291,7 @@ const Home = ({ navigation }) => {
                       navigation.navigate('UpdateTask', {
                         updateCurrentTask: _updateCurrentTask,
                         selectedTask: item,
+                        currentDate,
                       })
                     }
                     key={item.key}
