@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     color: '#9CAAC4',
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 5,
   },
   red: {
     height: 23,
@@ -115,7 +115,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   taskContainer: {
-    height: 800,
     width: 327,
     alignSelf: 'center',
     borderRadius: 20,
@@ -396,36 +395,40 @@ const CreateTask = ({ navigation }) => {
                     placeholder="What do you need to do?"
                     maxLength={30}
                   />
-                  <Text style={styles.text}>Tag</Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity
-                      onPress={() => setSelectedTask({ ...selectedTask, color: 'green' })}
-                      style={styles.green}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => setSelectedTask({ ...selectedTask, color: 'blue' })}
-                      style={styles.blue}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => setSelectedTask({ ...selectedTask, color: 'red' })}
-                      style={styles.red}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() =>
-                        setSelectedTask({
-                          ...selectedTask,
-                          color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-                            Math.random() * Math.floor(256)
-                          )},${Math.floor(Math.random() * Math.floor(256))})`,
-                        })
-                      }
-                      style={styles.random}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
-                    </TouchableOpacity>
+                  <View style={styles.seperator} />
+                  <View>
+                    <Text style={styles.text}>Tag</Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <TouchableOpacity
+                        onPress={() => setSelectedTask({ ...selectedTask, color: 'green' })}
+                        style={styles.green}>
+                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setSelectedTask({ ...selectedTask, color: 'blue' })}
+                        style={styles.blue}>
+                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setSelectedTask({ ...selectedTask, color: 'red' })}
+                        style={styles.red}>
+                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() =>
+                          setSelectedTask({
+                            ...selectedTask,
+                            color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                              Math.random() * Math.floor(256)
+                            )},${Math.floor(Math.random() * Math.floor(256))})`,
+                          })
+                        }
+                        style={styles.random}>
+                        <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
+                  <View style={styles.seperator} />
                   <View style={selectedTask.notes} />
                   <View>
                     <Text style={styles.text}>Notes</Text>
