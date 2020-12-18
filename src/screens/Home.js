@@ -119,7 +119,6 @@ const Home = ({ navigation }) => {
       if (value !== null) {
         const todoList = JSON.parse(value);
         const markDot = todoList.map((item) => item.markedDot);
-        debugger;
         const todoLists = await todoList.filter((item) => {
           if (date === item.date) {
             return true;

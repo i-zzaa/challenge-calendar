@@ -54,12 +54,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   red: {
-    height: 23,
-    width: 60,
-    backgroundColor: '#b31717',
+    height: 30,
+    width: '24%',
+    marginBottom: 10,
+    backgroundColor: '#ff6347',
     justifyContent: 'center',
     borderRadius: 5,
-    marginRight: 7,
+    marginRight: 5,
   },
   deleteButton: {
     backgroundColor: '#ff6347',
@@ -81,30 +82,33 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   blue: {
-    height: 23,
-    width: 60,
+    height: 30,
+    width: '24%',
+    marginBottom: 10,
     backgroundColor: '#62CCFB',
     justifyContent: 'center',
     borderRadius: 5,
-    marginRight: 7,
+    marginRight: 5,
   },
   green: {
-    height: 23,
-    width: 60,
+    height: 30,
+    width: '24%',
+    marginBottom: 10,
     backgroundColor: '#4CD565',
     justifyContent: 'center',
     borderRadius: 5,
-    marginRight: 7,
+    marginRight: 5,
   },
   random: {
-    height: 23,
-    width: 60,
+    height: 30,
+    width: '24%',
+    marginBottom: 10,
     backgroundColor: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
       Math.random() * Math.floor(256)
     )},${Math.floor(Math.random() * Math.floor(256))})`,
     justifyContent: 'center',
     borderRadius: 5,
-    marginRight: 7,
+    marginRight: 50,
   },
   title: {
     height: 25,
@@ -112,7 +116,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     paddingLeft: 8,
     fontSize: 19,
-    marginBottom: 20,
+    marginBottom: 5,
+    marginTop: 20,
   },
   taskContainer: {
     width: 327,
@@ -399,7 +404,7 @@ const CreateTask = ({ navigation }) => {
                   <View style={styles.seperator} />
                   <View>
                     <Text style={styles.text}>Tag</Text>
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                       <TouchableOpacity
                         onPress={() => setSelectedTask({ ...selectedTask, color: 'green' })}
                         style={styles.green}>
