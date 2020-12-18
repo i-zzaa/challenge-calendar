@@ -17,6 +17,7 @@ import { CalendarList } from 'react-native-calendars';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import uuid from 'uuid';
 
+import { createNewCalendar } from '../data/Calendar';
 import { Context } from '../data/Context';
 import { getCity } from '../services/city';
 
@@ -156,48 +157,58 @@ const styles = StyleSheet.create({
 
 const CreateTask = ({ navigation }) => {
   const [currentDay, setCurrentDay] = useState(moment().format());
-  const [taskText, setTaskText] = useState('');
-  const [notesText, setNotesText] = useState('');
   const [visibleHeight, setVisibleHeight] = useState(Dimensions.get('window').height);
   const [isAlarmSet, setIsAlarmSet] = useState(false);
-  const [alarmTime, setAlarmTime] = useState(moment().format());
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState();
-  const [color, setColor] = useState('');
-  const [city, setCity] = useState();
+  const [alarmTime, setAlarmTime] = useState(currentDay);
   const [pickerCity, setPickerCity] = useState([]);
-  const [weather, setWeather] = useState({});
-  const [date, setDate] = useState();
 
-  const [selectedTask, setSelectedTask] = useState(navigation.state.params?.selectedTask);
+  const [selectedTask, setSelectedTask] = useState(
+    navigation.state.params.selectedTask
+      ? navigation.state.params.selectedTask
+      : {
+          title: '',
+          notes: '',
+          city: '',
+          color: '',
+          date: currentDay,
+          alarm: {
+            time: moment().format('h:mm A'),
+            isOn: false,
+            createEventAsyncRes: '',
+          },
+          weather: {},
+        }
+  );
 
   const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
-  const getDate = () => moment(currentDay).format('YYYY-MM-DD');
 
   const _handleCreateEventData = async (value) => {
     const { updateCurrentTask, currentDate } = navigation.state.params;
     const _creatTodo = {
       key: uuid(),
-      date: getDate(),
+      date: currentDate,
       todoList: [
         {
           key: uuid(),
-          title: taskText,
-          notes: notesText,
-          city,
-          weather,
+          title: selectedTask.title,
+          notes: selectedTask.notes,
+          date: selectedTask.date,
+          city: selectedTask.city,
+          weather: selectedTask.weather,
           alarm: {
             time: alarmTime,
             isOn: isAlarmSet,
             createEventAsyncRes,
           },
-          color,
+          color: selectedTask.color,
         },
       ],
       markedDot: {
-        date: currentDay,
+        date: selectedDay,
         dots: [
           {
             key: uuid(),
@@ -209,8 +220,15 @@ const CreateTask = ({ navigation }) => {
         ],
       },
     };
-
     await value.updateTodo(_creatTodo);
+    await updateCurrentTask(currentDate);
+    navigation.navigate('Home');
+  };
+
+  const _handleUpdateEventData = async (value) => {
+    const { updateCurrentTask, currentDate } = navigation.state.params;
+
+    await value.updateSelectedTask(selectedTask);
     await updateCurrentTask(currentDate);
     navigation.navigate('Home');
   };
@@ -233,7 +251,6 @@ const CreateTask = ({ navigation }) => {
 
   const _getCurrentDay = (date = moment().format('YYYY-MM-DD')) => {
     const dateCurrent = {};
-    console.log(date);
     dateCurrent[moment(date)] = {
       selected: true,
       selectedColor: '#2E66E7',
@@ -254,16 +271,34 @@ const CreateTask = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    if (selectedTask) {
-      setTaskText(selectedTask.title);
-      setNotesText(selectedTask.notes);
-      setCity(selectedTask.city);
-      setColor(selectedTask.color);
-      setIsAlarmSet(selectedTask.alarm.createEventAsyncRes);
-      setWeather(selectedTask.weather);
+  const _updateAlarm = async () => {
+    const calendarId = await createNewCalendar();
+
+    setSelectedTask({
+      ...selectedTask,
+      startDate: moment(selectedTask.alarm.time).add(0, 'm').toDate(),
+      endDate: moment(selectedTask.alarm.time).add(5, 'm').toDate(),
+      timeZone: 'America/Sao_Paulo',
+    });
+    const event = { ...selectedTask };
+
+    if (selectedTask.alarm.createEventAsyncRes === '') {
+      try {
+        const createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
+        const updateTask = { ...selectedTask };
+        updateTask.alarm.createEventAsyncRes = createEventAsyncRes;
+        selectedTask(updateTask);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        await Calendar.updateEventAsync(selectedTask.alarm.createEventAsyncRes.toString(), event);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }, []);
+  };
 
   useEffect(() => {
     const { currentDate, updateCurrentTask } = navigation.state.params;
@@ -272,7 +307,8 @@ const CreateTask = ({ navigation }) => {
     const _pickerCity = async () => {
       try {
         const cities = await getCity();
-        setCurrentDay(_date);
+        setSelectedDay(_date);
+        setCurrentDay(currentDate);
         updateCurrentTask(currentDate);
 
         setPickerCity(cities);
@@ -320,24 +356,28 @@ const CreateTask = ({ navigation }) => {
                       width: 350,
                       height: 350,
                     }}
-                    current={currentDay}
+                    current={selectedTask.date}
                     minDate={moment().format()}
                     horizontal
                     pastScrollRange={0}
                     pagingEnabled
                     calendarWidth={350}
                     onDayPress={(day) => {
-                      //const _selected = selectedDay;
                       const _selected = {};
                       const date = day.dateString;
                       _selected[date] = {
                         selected: true,
                         selectedColor: '#2E66E7',
                       };
-                      setSelectedDay(_selected);
 
                       setCurrentDay(day.dateString);
                       setAlarmTime(day.dateString);
+
+                      const prevSelectTask = { ...setSelectedTask };
+                      prevSelectTask.alarm.time = day.dateString;
+                      prevSelectTask.date = moment(day.dateString).format('YYYY-MM-DD');
+
+                      setSelectedTask(prevSelectTask);
                     }}
                     monthFormat="yyyy MMMM"
                     hideArrows
@@ -356,35 +396,42 @@ const CreateTask = ({ navigation }) => {
                 <View style={styles.taskContainer}>
                   <TextInput
                     style={styles.title}
-                    onChangeText={(text) => setTaskText(text)}
-                    value={taskText}
+                    onChangeText={(text) => setSelectedTask({ ...selectedTask, title: text })}
+                    value={selectedTask.title}
                     placeholder="What do you need to do?"
                     maxLength={30}
                   />
                   <Text style={styles.text}>Tag</Text>
                   <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity onPress={() => setColor('green')} style={styles.green}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedTask({ ...selectedTask, color: 'green' })}
+                      style={styles.green}>
                       <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setColor('blue')} style={styles.blue}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedTask({ ...selectedTask, color: 'blue' })}
+                      style={styles.blue}>
                       <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setColor('red')} style={styles.red}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedTask({ ...selectedTask, color: 'red' })}
+                      style={styles.red}>
                       <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() =>
-                        setColor(
-                          `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
+                        setSelectedTask({
+                          ...selectedTask,
+                          color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
                             Math.random() * Math.floor(256)
-                          )},${Math.floor(Math.random() * Math.floor(256))})`
-                        )
+                          )},${Math.floor(Math.random() * Math.floor(256))})`,
+                        })
                       }
                       style={styles.random}>
                       <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.notesContent} />
+                  <View style={selectedTask.notes} />
                   <View>
                     <Text style={styles.text}>Notes</Text>
                     <TextInput
@@ -394,8 +441,8 @@ const CreateTask = ({ navigation }) => {
                         marginTop: 3,
                       }}
                       maxLength={20}
-                      onChangeText={(text) => setNotesText(text)}
-                      value={notesText}
+                      onChangeText={(text) => setSelectedTask({ ...selectedTask, notes: text })}
+                      value={selectedTask.notes}
                       placeholder="Enter notes about the task."
                     />
                   </View>
@@ -405,6 +452,12 @@ const CreateTask = ({ navigation }) => {
                     <Text style={styles.text}>Times</Text>
                     <TouchableOpacity
                       onPress={() => _showDateTimePicker()}
+                      value={selectedTask.alarm.time}
+                      onValueChange={(time) => {
+                        const prevSelectedTask = { ...selectedTask };
+                        prevSelectedTask.alarm.times = time;
+                        setSelectedTask(prevSelectedTask);
+                      }}
                       style={{
                         height: 25,
                         marginTop: 3,
@@ -435,7 +488,7 @@ const CreateTask = ({ navigation }) => {
                   <View>
                     <Text style={styles.text}>City</Text>
                     <Picker
-                      selectedValue={city}
+                      selectedValue={selectedTask.city}
                       onValueChange={async (itemValue, itemIndex) => {
                         try {
                           setCity(itemValue);
@@ -444,7 +497,11 @@ const CreateTask = ({ navigation }) => {
                           date = moment(date).format('DD-MM-YYYY');
                           const _weatherForecast = await getWeather(itemValue, date);
 
-                          setWeather(_weatherForecast);
+                          setSelectedTask({
+                            ...selectedTask,
+                            city: itemValue,
+                            weather: _weatherForecast,
+                          });
                         } catch (error) {}
                       }}>
                       <Picker.Item label="Selecione" value="selecione" />
@@ -463,7 +520,7 @@ const CreateTask = ({ navigation }) => {
                         color: '#afafaf',
                         margin: 3,
                       }}>
-                      {`Description: ${weather?.description || ''}`}
+                      {`Description: ${selectedTask.weather?.description || ''}`}
                     </Text>
 
                     <Text
@@ -472,18 +529,19 @@ const CreateTask = ({ navigation }) => {
                         textAlign: 'left',
                         color: '#afafaf',
                       }}>
-                      {`Temp: ${weather?.temp || ''}`}
+                      {`Temp: ${selectedTask.weather?.temp || ''}`}
                     </Text>
                   </View>
                 </View>
 
-                {!selectedTask ? (
+                {navigation.state.params.isCreate ? (
                   <TouchableOpacity
-                    disabled={taskText === ''}
+                    disabled={selectedTask.title === ''}
                     style={[
                       styles.createTaskButton,
                       {
-                        backgroundColor: taskText === '' ? 'rgba(46, 102, 231,0.5)' : '#2E66E7',
+                        backgroundColor:
+                          selectedTask.title === '' ? 'rgba(46, 102, 231,0.5)' : '#2E66E7',
                       },
                     ]}
                     onPress={async () => {
@@ -512,14 +570,8 @@ const CreateTask = ({ navigation }) => {
                     }}>
                     <TouchableOpacity
                       onPress={async () => {
-                        const { updateCurrentTask } = navigation.params;
                         await _updateAlarm();
-
-                        await value.updateSelectedTask({
-                          date,
-                          todo: selectedTask,
-                        });
-                        await updateCurrentTask(date);
+                        _handleUpdateEventData(value);
                       }}
                       style={styles.updateButton}>
                       <Text
@@ -533,14 +585,15 @@ const CreateTask = ({ navigation }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={async () => {
-                        const { updateCurrentTask } = navigation.params;
+                        const { updateCurrentTask, currentDate } = navigation.state.params;
 
                         _deleteAlarm();
                         await value.deleteSelectedTask({
-                          date,
+                          date: currentDate,
                           todo: selectedTask,
                         });
-                        await updateCurrentTask(date);
+                        await updateCurrentTask(currentDate);
+                        navigation.navigate('Home');
                       }}
                       style={styles.deleteButton}>
                       <Text
