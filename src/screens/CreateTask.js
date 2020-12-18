@@ -20,6 +20,7 @@ import uuid from 'uuid';
 import { createNewCalendar } from '../data/Calendar';
 import { Context } from '../data/Context';
 import { getCity } from '../services/city';
+import { getWeather } from '../services/weather';
 
 const { width: vw } = Dimensions.get('window');
 
@@ -162,7 +163,6 @@ const CreateTask = ({ navigation }) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
   const [selectedDay, setSelectedDay] = useState();
-  const [alarmTime, setAlarmTime] = useState(currentDay);
   const [pickerCity, setPickerCity] = useState([]);
 
   const [selectedTask, setSelectedTask] = useState(
@@ -175,11 +175,14 @@ const CreateTask = ({ navigation }) => {
           color: '',
           date: currentDay,
           alarm: {
-            time: moment().format('h:mm A'),
+            time: currentDay,
             isOn: false,
             createEventAsyncRes: '',
           },
-          weather: {},
+          weather: {
+            description: '',
+            temp: '',
+          },
         }
   );
 
@@ -198,10 +201,13 @@ const CreateTask = ({ navigation }) => {
           notes: selectedTask.notes,
           date: selectedTask.date,
           city: selectedTask.city,
-          weather: selectedTask.weather,
+          weather: {
+            temp: selectedTask.weather.temp,
+            description: selectedTask.weather.description,
+          },
           alarm: {
-            time: alarmTime,
-            isOn: isAlarmSet,
+            time: selectedTask.alarm.time,
+            isOn: selectedTask.alarm.isOn,
             createEventAsyncRes,
           },
           color: selectedTask.color,
@@ -225,27 +231,18 @@ const CreateTask = ({ navigation }) => {
     navigation.navigate('Home');
   };
 
-  const _handleUpdateEventData = async (value) => {
-    const { updateCurrentTask, currentDate } = navigation.state.params;
-
-    await value.updateSelectedTask(selectedTask);
-    await updateCurrentTask(currentDate);
-    navigation.navigate('Home');
-  };
-
-  const handleAlarmSet = () => {
-    const prevSelectedTask = { ...selectedTask };
-    prevSelectedTask.alarm.isOn = !prevSelectedTask.alarm.isOn;
-    setSelectedTask(prevSelectedTask);
-  };
-
   const _handleDatePicked = (date) => {
     const selectedDatePicked = currentDay;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
     const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
 
-    setAlarmTime(newModifiedDay);
+    const time = {
+      ...selectedTask.alarm,
+      time: newModifiedDay,
+    };
+
+    setSelectedTask({ ...selectedTask, alarm: time });
     _hideDateTimePicker();
   };
 
@@ -371,8 +368,6 @@ const CreateTask = ({ navigation }) => {
                       };
 
                       setCurrentDay(day.dateString);
-                      setAlarmTime(day.dateString);
-
                       const prevSelectTask = { ...setSelectedTask };
                       prevSelectTask.alarm.time = day.dateString;
                       prevSelectTask.date = moment(day.dateString).format('YYYY-MM-DD');
@@ -462,7 +457,9 @@ const CreateTask = ({ navigation }) => {
                         height: 25,
                         marginTop: 3,
                       }}>
-                      <Text style={{ fontSize: 19 }}>{moment(alarmTime).format('h:mm A')}</Text>
+                      <Text style={{ fontSize: 19 }}>
+                        {moment(selectedTask.alarm.time).format('h:mm A')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.seperator} />
@@ -479,10 +476,19 @@ const CreateTask = ({ navigation }) => {
                           height: 25,
                           marginTop: 3,
                         }}>
-                        <Text style={{ fontSize: 19 }}>{moment(alarmTime).format('h:mm A')}</Text>
+                        <Text style={{ fontSize: 19 }}>
+                          {moment(selectedTask.alarm.time).format('h:mm A')}
+                        </Text>
                       </View>
                     </View>
-                    <Switch value={isAlarmSet} onValueChange={handleAlarmSet} />
+                    <Switch
+                      value={selectedTask.alarm.isOn}
+                      onValueChange={() => {
+                        const prevSelectedTask = { ...selectedTask };
+                        prevSelectedTask.alarm.isOn = !prevSelectedTask.alarm.isOn;
+                        setSelectedTask(prevSelectedTask);
+                      }}
+                    />
                   </View>
                   <View style={styles.seperator} />
                   <View>
@@ -490,17 +496,20 @@ const CreateTask = ({ navigation }) => {
                     <Picker
                       selectedValue={selectedTask.city}
                       onValueChange={async (itemValue, itemIndex) => {
+                        setSelectedTask({
+                          ...selectedTask,
+                          city: itemValue,
+                        });
                         try {
-                          setCity(itemValue);
-
-                          let date = new Date(alarmTime);
-                          date = moment(date).format('DD-MM-YYYY');
+                          const date = moment(selectedTask.date).format('YYYY-MM-DD');
                           const _weatherForecast = await getWeather(itemValue, date);
-
                           setSelectedTask({
                             ...selectedTask,
+                            weather: {
+                              temp: _weatherForecast.temp,
+                              description: _weatherForecast.description,
+                            },
                             city: itemValue,
-                            weather: _weatherForecast,
                           });
                         } catch (error) {}
                       }}>
@@ -520,7 +529,7 @@ const CreateTask = ({ navigation }) => {
                         color: '#afafaf',
                         margin: 3,
                       }}>
-                      {`Description: ${selectedTask.weather?.description || ''}`}
+                      {`Description: ${selectedTask.weather.description}`}
                     </Text>
 
                     <Text
@@ -529,7 +538,7 @@ const CreateTask = ({ navigation }) => {
                         textAlign: 'left',
                         color: '#afafaf',
                       }}>
-                      {`Temp: ${selectedTask.weather?.temp || ''}`}
+                      {`Temp: ${selectedTask.weather.temp}`}
                     </Text>
                   </View>
                 </View>
@@ -570,8 +579,19 @@ const CreateTask = ({ navigation }) => {
                     }}>
                     <TouchableOpacity
                       onPress={async () => {
-                        await _updateAlarm();
-                        _handleUpdateEventData(value);
+                        const { updateCurrentTask, currentDate } = navigation.state.params;
+
+                        if (selectedTask.alarm.isOn) {
+                          await _updateAlarm();
+                        } else {
+                          await _deleteAlarm();
+                        }
+                        await value.updateSelectedTask({
+                          date: currentDate,
+                          todo: selectedTask,
+                        });
+                        updateCurrentTask(currentDate);
+                        navigation.navigate('Home');
                       }}
                       style={styles.updateButton}>
                       <Text

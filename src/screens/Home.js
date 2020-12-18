@@ -11,8 +11,6 @@ import {
   Text,
   Dimensions,
   StyleSheet,
-  Alert,
-  Platform,
   Button,
 } from 'react-native';
 import CalendarStrip from 'react-native-calendar-strip';
