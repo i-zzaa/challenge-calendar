@@ -1,10 +1,14 @@
 import Constants from 'expo-constants';
 import moment from 'moment';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Text, View, Dimensions, ScrollView, StyleSheet } from 'react-native';
+import { Text, View, Dimensions, ScrollView, StyleSheet, LogBox } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigation, useRoute } from '@react-navigation/native';
+
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
 import {
   ActButton,
@@ -330,10 +334,9 @@ const CreateTask = ( ) => {
   };
 
   useEffect(() => {
-    const { currentDate, updateCurrentTask } = route.params;
+    const { currentDate } = route.params;
     const _date = _getCurrentDay(currentDate);
     setCurrentDay(currentDate);
-    //updateCurrentTask(currentDate);
     setSelectedDay(_date);
   }, []);
 

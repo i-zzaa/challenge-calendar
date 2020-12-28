@@ -2,10 +2,11 @@ import React from 'react';
 import CalendarStrip from 'react-native-calendar-strip';
 
 
-const CalendarStrip_ = ({onDateSelected, markedDate, styles, calenderRef, datesWhitelist}) => {
+const CalendarStrip_ = React.forwardRef((props, ref) => {
+  const {styles, datesWhitelist, markedDate, onDateSelected} = props;
   return (
     <CalendarStrip
-    ref={calenderRef}
+    ref={ref}
     calendarAnimation={{ type: 'sequence', duration: 30 }}
     daySelectionAnimation={{
       type: 'background',
@@ -28,6 +29,6 @@ const CalendarStrip_ = ({onDateSelected, markedDate, styles, calenderRef, datesW
     onDateSelected={(date) => onDateSelected(date)}
   />
   );
-}
+})
 
 export default CalendarStrip_;

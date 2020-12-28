@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
 import moment from 'moment';
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useState, useRef, useContext, useCallback } from 'react';
 import {
   //AsyncStorage,
   View,
@@ -184,7 +184,7 @@ const Home = ( ) => {
     }
   };
 
-  const _updateCurrentTask = async (date = currentDate) => {
+  const _updateCurrentTask = useCallback(async (date = currentDate) => {
     try {
       const todo = await AsyncStorage.getItem('TODO');
       if (todo !== null) {
@@ -208,7 +208,7 @@ const Home = ( ) => {
     } catch (error) {
       // Error retrieving data
     }
-  };
+  });
 
   useEffect(() => {
     _updateCurrentTask();
