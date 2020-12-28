@@ -1,10 +1,8 @@
 import { fireEvent, render, cleanup } from '@testing-library/react-native';
 import React from 'react';
 import "@testing-library/jest-dom/extend-expect";
-import nock from "nock";
 
 import City from '../City';
-import { requestCities } from '../../utils/__mocks__/requests.js'
 
 const pickerCity = [
   { name: 'cidade 1', id: 0 },
@@ -12,15 +10,15 @@ const pickerCity = [
 ];
 
 afterEach(()=> {
-  nock.cleanAll();
   cleanup();
 });
 
-beforeEach(()=> {
-  requestCities(pickerCity)
+beforeEach(() => {
+  fetch.resetMocks()
 })
 
 test('should render a picker with the cities', async () => {
+  fetch.mockResponseOnce(pickerCity)
   const onValueChange = jest.fn();
 
   const { getByTestId, getByText } = render(

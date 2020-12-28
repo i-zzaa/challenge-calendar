@@ -7,8 +7,8 @@ export const selectedTaskMock = {
   date: '2020-12-12',
   city: 'cidade 1',
   weather: {
-    temp: '',
-    description: '',
+    temp: 25,
+    description: 'Partly cloudy',
   },
   alarm: {
     time: '2020-12-12T14:52:17.000Z',

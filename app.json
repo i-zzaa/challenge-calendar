@@ -3,7 +3,7 @@
   "displayName": "Challenge Calendar",
   "expo": {
     "name": "Challenge Calendar",
-    "slug": "challenge-calendar",
+    "slug": "challengecalendar",
     "version": "1.0.0",
     "assetBundlePatterns": ["**/*"],
     "icon": "./assets/icon.png",
@@ -13,11 +13,11 @@
       "resizeMode": "cover"
     },
     "ios": {
-      "bundleIdentifier": "com.isatecnologia.challengecalendar",
+      "bundleIdentifier": "com.isadesenvolvimento.challengecalendar",
       "buildNumber": "1.0.0"
     },
     "android": {
-      "package": "com.isatecnologia.challengecalendar",
+      "package": "com.isadesenvolvimento.challengecalendar",
       "versionCode": 1
     }
   }

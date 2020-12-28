@@ -2,11 +2,9 @@ import { fireEvent, render, cleanup, act, waitFor } from '@testing-library/react
 import React from 'react';
 import MockedNavigator from '../../utils/__mocks__/MockedNavigator'
 import "@testing-library/jest-dom/extend-expect";
-import { requestCities, requestWeather } from '../../utils/__mocks__/requests.js'
 import CreateTask from '../CreateTask';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectedTaskMock, dateTest }from '../../utils/__mocks__/selectedTask' 
-import nock from "nock";
 
 const pickerCity = [
     { name: 'cidade 1', id: 0 },
@@ -15,18 +13,18 @@ const pickerCity = [
 
   beforeEach(() => {
     fetch.resetMocks()
-    requestCities(pickerCity)
-    requestWeather()
 })
 
 afterEach(()=> {
-    nock.cleanAll();
     cleanup();
   });
 
 fetch.mockResponseOnce(pickerCity)
 
 test('page should create task', async () => {
+  fetch.mockResponseOnce(JSON.stringify(pickerCity))
+  fetch.mockResponseOnce(JSON.stringify({"temp":25,"description":"Partly cloudy"}))
+
   const { getByTestId, getByText } = render (
       <MockedNavigator component={CreateTask}/>
   );
