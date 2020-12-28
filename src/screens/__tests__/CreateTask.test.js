@@ -29,56 +29,31 @@ test('page should create task', async () => {
       <MockedNavigator component={CreateTask}/>
   );
 
-  await waitFor(()=> {
-    const dateInput = getByTestId('calendar-list-task');
-    act(()=> {
-      fireEvent(dateInput, 'onDayPress', { dateString: dateTest })
-    })
-  })
-
+  const dateInput = getByTestId('calendar-list-task');
+  await waitFor(() => fireEvent(dateInput, 'onDayPress', { dateString: dateTest }));
   const titleInput = getByTestId('text-input');
-  act(()=> {
-    fireEvent.changeText(titleInput, selectedTaskMock.title);
-  })
+  await fireEvent.changeText(titleInput, selectedTaskMock.title);
 
   const notesTask = getByTestId('notes-task');
-  act(()=> {
-    fireEvent.changeText(notesTask, selectedTaskMock.notes);
-  })
+  await  fireEvent.changeText(notesTask, selectedTaskMock.notes);
 
   const timeInput = getByTestId('time-task');
   let timePicker = null;
 
-  act(()=> {
-    fireEvent.press(timeInput);
-    fireEvent(timeInput, 'onPress');
-  })
+  await fireEvent.press(timeInput);
+  await fireEvent(timeInput, 'onPress');
 
-  await waitFor(()=> {
-    timePicker = getByTestId('time-picker');
-    fireEvent(timePicker, 'onConfirm', selectedTaskMock.alarm.time);
-  })
+  timePicker = getByTestId('time-picker');
+  await fireEvent(timePicker, 'onConfirm', selectedTaskMock.alarm.time);
 
-  await waitFor(()=> {
-    const cityInput = getByTestId('city-task');
-    act(()=> {
-      fireEvent(cityInput, 'onValueChange', pickerCity[0].name);
-    })
-    expect(cityInput.props.selectedValue).toEqual(selectedTaskMock.city)
+  const cityInput = getByTestId('city-task');
+  await act(async () => await fireEvent(cityInput, 'onValueChange', pickerCity[0].name))
+  expect(cityInput.props.selectedValue).toEqual(selectedTaskMock.city)
 
-  })
-
-  await waitFor(async () => {
-    const btnAddTask = getByTestId('btn-add-task');
-    await act(async () => {
-      await fireEvent(btnAddTask, 'onPress');
-      await fireEvent.press(btnAddTask);
-    })
-  })
-
+  const btnAddTask = getByTestId('btn-add-task');
+  await act(async () => await fireEvent(btnAddTask, 'onPress'));
   const todo = await AsyncStorage.getItem('TODO');
   const task =  JSON.parse(todo);
-
   expect(task[0].todoList).toEqual([selectedTaskMock]);
   expect(titleInput.props.maxLength).toEqual(30)
 

@@ -37,7 +37,7 @@ Object.defineProperty(ReactNative, 'Switch', {
 })
 
 jest.mock('@react-native-picker/picker', () => {
-  const React = require('React')
+  const React = require('react')
   const RealComponent = jest.requireActual('@react-native-picker/picker')
 
   class Picker extends React.Component {
