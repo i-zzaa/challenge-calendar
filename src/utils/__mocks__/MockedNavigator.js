@@ -4,9 +4,10 @@ import {createStackNavigator} from '@react-navigation/stack';
 import TodoStore from '../../data/TodoStore'
 import { selectedTaskNullMock } from './selectedTask'
 import { render } from '@testing-library/react-native';
+import {  dateTest }from './selectedTask' 
 
 export const navigation = {
-  currentDate: '2020-12-21',
+  currentDate: dateTest,
   isCreate: true,
   selectedTask: selectedTaskNullMock,
   updateCurrentTask: jest.fn(),

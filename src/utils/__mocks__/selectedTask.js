@@ -1,25 +1,25 @@
-import uuid from 'uuid';
+export const dateTest = '2020-12-12';
 
 export const selectedTaskMock = {
-  key: uuid(),
+  key: 'hjhj87878',
   title: 'Teste Title',
   notes: 'Teste Note',
   date: '2020-12-12',
-  city: 'cidade 2',
+  city: 'cidade 1',
   weather: {
-    temp: 25,
-    description: 'Partly cloudy',
+    temp: '',
+    description: '',
   },
   alarm: {
-    time: '3:11 PM',
-    isOn: true,
+    time: '2020-12-12T14:52:17.000Z',
+    isOn: false,
     createEventAsyncRes: '',
   },
-  color: 'green',
+  color: '',
 };
 
 export const selectedTaskNullMock = {
-  key: uuid(),
+  key: 'hjhj87878',
   title: '',
   notes: '',
   date: '',
@@ -35,3 +35,4 @@ export const selectedTaskNullMock = {
   },
   color: '',
 };
+

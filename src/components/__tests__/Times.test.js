@@ -8,16 +8,11 @@ test('should render times', async () => {
   const onValueChange = jest.fn();
 
   const { getByTestId } = render(
-    <Times time="13:00 PM" onPress={onPress} onValueChange={onValueChange} />
+    <Times time="13:00 PM" onPress={onPress} />
   );
 
   const inputText = getByTestId('time-task');
 
   fireEvent.press(inputText);
   expect(onPress).toHaveBeenCalled();
-
-  fireEvent(inputText, 'onValueChange', '14:00 PM');
-
-  expect(onValueChange).toHaveBeenCalled();
-  expect(onValueChange).toHaveBeenCalledWith('14:00 PM');
 });

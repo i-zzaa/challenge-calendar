@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/extend-expect";
 import nock from "nock";
 
 import City from '../City';
-import { requestCities } from '../../utils/__mocks__/cities.js'
+import { requestCities } from '../../utils/__mocks__/requests.js'
 
 const pickerCity = [
   { name: 'cidade 1', id: 0 },

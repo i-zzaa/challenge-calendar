@@ -174,7 +174,6 @@ const CreateTask = ( ) => {
     await todoContext.updateTodo(_creatTodo);
     await updateCurrentTask(currentDate);
 
-    console.log(await todoContext.getTodos());
     navigation.navigate('Home');
   };
 
@@ -192,10 +191,10 @@ const CreateTask = ( ) => {
   };
 
   const _handleDatePicked = (date) => {
-    const selectedDatePicked = selectedTask.alarm.time;
+    const selectedDatePicked = date;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
-    const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
+    const newModifiedDay = moment(date).hour(hour).minute(minute);
 
     const time = {
       ...selectedTask.alarm,
@@ -264,12 +263,6 @@ const CreateTask = ( ) => {
     setSelectedDay(selected);
     setCurrentDay(day.dateString);
     setSelectedTask(prevSelectTask);
-  };
-
-  const handleOnValueChangeTimes = async (time) => {
-    const prevSelectedTask = { ...selectedTask };
-    prevSelectedTask.alarm.times = time;
-    setSelectedTask(prevSelectedTask);
   };
 
   const handleOnChangeValueAlarm = () => {
@@ -391,7 +384,7 @@ const CreateTask = ( ) => {
                 maxLength={30}
               />
               <View style={styles.seperator} />
-              <Tag onPress={(color) => setSelectedTask({ ...selectedTask, color })} />
+              <Tag  onPress={(color) => setSelectedTask({ ...selectedTask, color })} />
               <View style={styles.seperator} />
               <TextInput
                 title="Notes"
@@ -403,19 +396,20 @@ const CreateTask = ( ) => {
               />
               <View style={styles.seperator} />
               <Times
+                testID='time-task'
                 onPress={async () => await _showDateTimePicker()}
-                onValueChange={handleOnValueChangeTimes}
                 time={moment(selectedTask.alarm.time).format('h:mm A')}
-                value={selectedTask.alarm.time}
               />
               <View style={styles.seperator} />
               <Alarm
+                testID='alarm-task'
                 alarm={moment(selectedTask.alarm.time).format('h:mm A')}
                 value={selectedTask.alarm.isOn}
                 onValueChange={handleOnChangeValueAlarm}
               />
               <View style={styles.seperator} />
               <City
+                testID="city-task"
                 selectedValue={selectedTask.city}
                 pickerCity={pickerCity}
                 onValueChange={(itemValue, itemIndex) =>

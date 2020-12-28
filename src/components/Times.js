@@ -15,17 +15,15 @@ const styles = StyleSheet.create({
   },
 });
 
-const Times = ({ onPress, value, onValueChange, time, style = null }) => {
+const Times = ({ onPress, time, style = null }) => {
   return (
     <View>
       <Text style={style?.text || styles.text}>Times</Text>
       <TouchableOpacity
         testID="time-task"
         onPress={onPress}
-        value={value}
-        onValueChange={(time) => onValueChange(time)}
         style={style?.time || styles.time}>
-        <Text>{time}</Text>
+        <Text testID="text-time-task">{time}</Text>
       </TouchableOpacity>
     </View>
   );

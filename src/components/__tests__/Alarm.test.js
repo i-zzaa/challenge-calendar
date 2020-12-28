@@ -15,7 +15,7 @@ test('should render alarm', async () => {
 
   const alarmChange = getByTestId('alarm-task');
   fireEvent(alarmChange, 'onValueChange', true)
+
   expect(onValueChange).toHaveBeenCalled();
- // expect(alarmChange.props.value).toBeTruthy();
 });
 

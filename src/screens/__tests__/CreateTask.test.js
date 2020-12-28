@@ -2,10 +2,10 @@ import { fireEvent, render, cleanup, act, waitFor } from '@testing-library/react
 import React from 'react';
 import MockedNavigator from '../../utils/__mocks__/MockedNavigator'
 import "@testing-library/jest-dom/extend-expect";
-import { requestCities } from '../../utils/__mocks__/cities.js'
+import { requestCities, requestWeather } from '../../utils/__mocks__/requests.js'
 import CreateTask from '../CreateTask';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { selectedTaskMock }from '../../utils/__mocks__/selectedTask' 
+import { selectedTaskMock, dateTest }from '../../utils/__mocks__/selectedTask' 
 import nock from "nock";
 
 const pickerCity = [
@@ -16,6 +16,7 @@ const pickerCity = [
   beforeEach(() => {
     fetch.resetMocks()
     requestCities(pickerCity)
+    requestWeather()
 })
 
 afterEach(()=> {
@@ -23,124 +24,64 @@ afterEach(()=> {
     cleanup();
   });
 
-fetch.mockResponseOnce(JSON.stringify(pickerCity))
+fetch.mockResponseOnce(pickerCity)
 
-test('page contains the header and 10 items', async () => {
+test('page should create task', async () => {
+  const { getByTestId, getByText } = render (
+      <MockedNavigator component={CreateTask}/>
+  );
 
-  const { getByTestId, getByText } = React.forwardRef(() => {
-    const myRef = React.useRef();
-    render (
-        <MockedNavigator ref={myRef} component={CreateTask}/>
-    );
-
-    const titleInput = getByTestId('text-input');
+  await waitFor(()=> {
+    const dateInput = getByTestId('calendar-list-task');
     act(()=> {
-      fireEvent.changeText(titleInput, 'Teste Title');
+      fireEvent(dateInput, 'onDayPress', { dateString: dateTest })
     })
-    expect(titleInput.props.value).toEqual(selectedTaskMock.title)
-    expect(titleInput.props.maxLength).toEqual(30)
-  
-    const noteInput = getByTestId('notes-task');
+  })
+
+  const titleInput = getByTestId('text-input');
+  act(()=> {
+    fireEvent.changeText(titleInput, selectedTaskMock.title);
+  })
+
+  const notesTask = getByTestId('notes-task');
+  act(()=> {
+    fireEvent.changeText(notesTask, selectedTaskMock.notes);
+  })
+
+  const timeInput = getByTestId('time-task');
+  let timePicker = null;
+
+  act(()=> {
+    fireEvent.press(timeInput);
+    fireEvent(timeInput, 'onPress');
+  })
+
+  await waitFor(()=> {
+    timePicker = getByTestId('time-picker');
+    fireEvent(timePicker, 'onConfirm', selectedTaskMock.alarm.time);
+  })
+
+  await waitFor(()=> {
+    const cityInput = getByTestId('city-task');
     act(()=> {
-      fireEvent.changeText(noteInput, 'Teste Note');
+      fireEvent(cityInput, 'onValueChange', pickerCity[0].name);
     })
-    expect(noteInput.props.value).toEqual(selectedTaskMock.notes)
-
-
-    waitFor(()=> {
-      const timeInput = getByTestId('time-task');
-      act(()=> {
-        fireEvent.press(timeInput);
-        fireEvent(timeInput, 'onValueChange', '3:11 PM');
-      })
-      expect(timeInput.props.value).toEqual(selectedTaskMock.alarm.time)
-    })
-
-    const alarmInput = getByTestId('alarm-task');
-    act(()=> {
-      fireEvent(alarmInput, 'onValueChange');
-    })
-    expect(alarmInput.props.value).toEqual(selectedTaskMock.alarm.isOn)
-
-
-    waitFor(()=> {
-      const cityInput = getByTestId('city-task');
-      act(()=> {
-        fireEvent(cityInput, 'onValueChange', pickerCity[0].name);
-      })
-      expect(cityInput.props.value).toEqual(selectedTaskMock.city)
-    })
-
-    const btnAddTask = getByTestId('btn-add-task');
-    act(()=> {
-      fireEvent.press(btnAddTask);
-    })
-    
-
-    AsyncStorage.setItem('TODO', selectedTaskMock)
-    expect(AsyncStorage.getItem).toBeCalledWith('TODO')
-
-
+    expect(cityInput.props.selectedValue).toEqual(selectedTaskMock.city)
 
   })
 
+  await waitFor(async () => {
+    const btnAddTask = getByTestId('btn-add-task');
+    await act(async () => {
+      await fireEvent(btnAddTask, 'onPress');
+      await fireEvent.press(btnAddTask);
+    })
+  })
+
+  const todo = await AsyncStorage.getItem('TODO');
+  const task =  JSON.parse(todo);
+
+  expect(task[0].todoList).toEqual([selectedTaskMock]);
+  expect(titleInput.props.maxLength).toEqual(30)
 
 });
-
-
-// test('should render the tag buttons', React.forwardRef(() => {
-
-//   const myRef = React.useRef();
-  
-//   const { getByTestId, getByText } = render(
-//     <MockedNavigator ref={myRef} component={CreateTask}/>
-//   );
-  
-//   // const titleInput = getByTestId('text-input');
-//   // act(()=> {
-//   //   fireEvent.changeText(titleInput, 'Teste Title');
-//   // })
-//   // expect(titleInput.props.value).toEqual(selectedTaskMock.title)
-//   // expect(titleInput.props.maxLength).toEqual(30)
-
-//   // const noteInput = getByTestId('notes-task');
-//   // act(()=> {
-//   //   fireEvent.changeText(noteInput, 'Teste Note');
-//   // })
-//   // expect(noteInput.props.value).toEqual(selectedTaskMock.notes)
-
-//   // waitFor(()=> {
-//   //   const timeInput = getByTestId('time-task');
-//   //   act(()=> {
-//   //     fireEvent.press(timeInput);
-//   //     fireEvent(timeInput, 'onValueChange', '3:11 PM');
-//   //   })
-//   //   expect(timeInput.props.value).toEqual(selectedTaskMock.alarm.time)
-//   // })
-
-//   // const alarmInput = getByTestId('alarm-task');
-//   // act(()=> {
-//   //   fireEvent(alarmInput, 'onValueChange');
-//   // })
-//   // expect(alarmInput.props.value).toEqual(selectedTaskMock.alarm.isOn)
-
-
-//   // waitFor(()=> {
-//   //   const cityInput = getByTestId('city-task');
-//   //   act(()=> {
-//   //     fireEvent(cityInput, 'onValueChange', pickerCity[0].name);
-//   //   })
-//   //   expect(cityInput.props.value).toEqual(selectedTaskMock.city)
-//   // })
-
-//   // const btnAddTask = getByTestId('btn-add-task');
-//   // act(()=> {
-//   //   fireEvent.press(btnAddTask);
-//   // })
-  
-
-//   // await AsyncStorage.setItem('TODO', selectedTaskMock)
-//   // expect(AsyncStorage.getItem).toBeCalledWith('TODO')
-
-// //expect(AsyncStorage.getItem).toBeCalledWith('myKey');
-// }))
