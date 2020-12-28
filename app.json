@@ -1,15 +1,24 @@
 {
-  "name": "novo-novo-teste-async",
-  "displayName": "novo-novo-teste-async",
+  "name": "Challenge Calendar",
+  "displayName": "Challenge Calendar",
   "expo": {
-    "name": "novo-novo-teste-async",
-    "slug": "novo-novo-teste-async",
+    "name": "Challenge Calendar",
+    "slug": "challenge-calendar",
     "version": "1.0.0",
     "assetBundlePatterns": ["**/*"],
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "backgroundColor": "#6000EB",
       "resizeMode": "cover"
+    },
+    "ios": {
+      "bundleIdentifier": "com.isatecnologia.challengecalendar",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "package": "com.isatecnologia.challengecalendar",
+      "versionCode": 1
     }
   }
 }
