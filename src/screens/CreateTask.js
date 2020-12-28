@@ -1,10 +1,11 @@
 import Constants from 'expo-constants';
 import moment from 'moment';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Text, View, Dimensions, ScrollView, StyleSheet, LogBox } from 'react-native';
+import { Text, View, Dimensions, ScrollView, StyleSheet, LogBox, Alert } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import * as Localization from 'expo-localization';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -19,7 +20,7 @@ import {
   Tag,
   TextInput,
   Times,
-  Weather,
+  Weather
 } from '../components';
 import { createNewCalendar, Context } from '../data';
 import { getCity, getWeather } from '../services';
@@ -151,12 +152,12 @@ const CreateTask = ( ) => {
           date: item.date,
           city: item.city,
           weather: {
-            temp: item.weather.temp,
-            description: item.weather.description,
+            temp: item.weather?.temp,
+            description: item.weather?.description,
           },
           alarm: {
-            time: item.alarm.time,
-            isOn: item.alarm.isOn,
+            time: item.alarm?.time,
+            isOn: item.alarm?.isOn,
             createEventAsyncRes,
           },
           color: item.color,
@@ -181,15 +182,28 @@ const CreateTask = ( ) => {
     navigation.navigate('Home');
   };
 
+  const _addEventsToCalendar = async calendarId => {
+    const event = {
+      title: selectedTask.title,
+      notes: selectedTask.notes,
+      startDate: moment(selectedTask.alarm.time)
+        .add(0, 'm')
+        .toDate(),
+      endDate: moment(selectedTask.alarm.time)
+        .add(5, 'm')
+        .toDate(),
+      timeZone: Localization.timezone,
+    };
+  }
+    
   const synchronizeCalendar = async () => {
-    const calendarId = await createNewCalendar();
     try {
+      const calendarId = await createNewCalendar();
       const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
 
-      setCreateEventAsyncRes(_createEventAsyncRes, () => {
-        _handleCreateEventData(todoContext);
-      });
-    } catch (e) {
+      await setCreateEventAsyncRes(_createEventAsyncRes)
+      _handleCreateEventData(selectedTask);
+    } catch (e) { 
       Alert.alert(e.message);
     }
   };
@@ -209,7 +223,7 @@ const CreateTask = ( ) => {
     _hideDateTimePicker();
   };
 
-  const _getCurrentDay = (date = moment().format('YYYY-MM-DD')) => {
+  const _getCurrentDay = useCallback((date = moment().format('YYYY-MM-DD')) => {
     const dateCurrent = {};
     dateCurrent[moment(date).format('YYYY-MM-DD')] = {
       selected: true,
@@ -217,7 +231,7 @@ const CreateTask = ( ) => {
     };
 
     return dateCurrent;
-  };
+  });
 
   const _deleteAlarm = async () => {
     // try {
@@ -325,20 +339,13 @@ const CreateTask = ( ) => {
       setSelectedTask({
         ...selectedTask,
         weather: {
-          temp: _weatherForecast.temp,
-          description: _weatherForecast.description,
+          temp: _weatherForecast?.temp,
+          description: _weatherForecast?.description,
         },
         city: itemValue,
       });
     } catch (error) {}
   };
-
-  useEffect(() => {
-    const { currentDate } = route.params;
-    const _date = _getCurrentDay(currentDate);
-    setCurrentDay(currentDate);
-    setSelectedDay(_date);
-  }, []);
 
   const _pickerCity = useCallback(async () => {
     try {
@@ -346,6 +353,13 @@ const CreateTask = ( ) => {
       setPickerCity(cities);
     } catch (error) {}
   });
+
+  useEffect(() => {
+    const { currentDate } = route.params;
+    const _date = _getCurrentDay(currentDate);
+    setCurrentDay(currentDate);
+    setSelectedDay(_date);
+  }, []);
 
   useEffect(() => {
     _pickerCity();
@@ -421,8 +435,8 @@ const CreateTask = ( ) => {
               />
               <View style={styles.seperator} />
               <Weather
-                description={selectedTask.weather.description}
-                temp={selectedTask.weather.temp}
+                description={selectedTask?.weather.description}
+                temp={selectedTask?.weather.temp}
               />
             </View>
             {route.params.isCreate ? (
