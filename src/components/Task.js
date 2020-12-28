@@ -1,37 +1,45 @@
 import React from 'react';
-import { View, StyleSheet, Modal, Platform } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
+import moment from 'moment';
 
-const styles = StyleSheet.create({
-  cardMain: {
-    position: 'absolute',
-    top: 100,
-    width: 327,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    alignSelf: 'center',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-});
 
-const Task = ({ isModalVisible, children }) => {
+const Task = ({ onPress, styles, item}) => {
   return (
-    <Modal animationType="fade" transparent visible={isModalVisible} onRequestClose={() => null}>
-      <View
-        style={[
-          styles.container,
-          {
-            ...Platform.select({
-              android: {},
-            }),
-          },
-        ]}>
-        <View style={styles.cardMain}>{children}</View>
+    <TouchableOpacity
+    testID='task-item'
+    onPress={onPress}
+    key={item.key}
+    style={styles?.taskListContent}>
+    <View style={styles?.containerTask}>
+      <View style={styles?.containerTask2}>
+        <View
+          style={{
+            height: 12,
+            width: 12,
+            borderRadius: 6,
+            backgroundColor: item.color,
+            marginRight: 8,
+          }}
+        />
+        <Text style={styles?.task}>{item.title}</Text>
       </View>
-    </Modal>
+      <View>
+        <View style={styles?.task1}>
+          <Text style={styles?.taskDate}>{moment(item.alarm.time).format('YYYY-MM-DD')}</Text>
+          <Text style={styles?.taskItem}>{item.notes}</Text>
+        </View>
+      </View>
+    </View>
+    <View
+      style={{
+        height: 80,
+        width: 5,
+        backgroundColor: item.color,
+        borderRadius: 5,
+      }}
+    />
+  </TouchableOpacity>
   );
-};
+}
 
 export default Task;

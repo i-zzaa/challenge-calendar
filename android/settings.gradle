@@ -1,4 +1,4 @@
-rootProject.name = 'challengecalendar'
+rootProject.name = 'novonovotesteasync'
 
 apply from: '../node_modules/react-native-unimodules/gradle.groovy'
 includeUnimodulesProjects()
@@ -7,3 +7,6 @@ apply from: file("../node_modules/@react-native-community/cli-platform-android/n
 applyNativeModulesSettingsGradle(settings)
 
 include ':app'
+
+include ':@react-native-async-storage' 
+project(':@react-native-async-storage').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-async-storage/async-storage/android')

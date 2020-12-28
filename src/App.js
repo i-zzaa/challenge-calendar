@@ -1,27 +1,14 @@
+import  React, {useEffect} from 'react';
+import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import Home from './screens/Home'
+import CreateTask from './screens/CreateTask'
+import TodoStore from './data/TodoStore'
 import * as Permissions from 'expo-permissions';
-import React, { useEffect } from 'react';
-import { SafeAreaView, Platform } from 'react-native';
 
-//import { AppContainer } from './routes';
 
-import { createAppContainer } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
-
-import TodoStore from './data/TodoStore';
-import CreateTask from './screens/CreateTask';
-import Home from './screens/Home';
-
-const AppNavigator = createStackNavigator(
-  {
-    Home,
-    CreateTask,
-  },
-  {
-    headerMode: 'none',
-  }
-);
-
-const AppContainer = createAppContainer(AppNavigator);
+const Stack = createStackNavigator();
 
 const App = () => {
   const askForCalendarPermissions = async () => {
@@ -36,17 +23,22 @@ const App = () => {
   };
 
   useEffect(() => {
+    disableYellowBox = true;
     askForCalendarPermissions();
     askForReminderPermissions();
   }, []);
 
   return (
-    // <SafeAreaView>
     <TodoStore>
-      <AppContainer />
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="CreateTask" component={CreateTask} />
+          <Stack.Screen name="UpdateTask" component={CreateTask} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </TodoStore>
-    /* </SafeAreaView> */
   );
-};
+}
 
 export default App;

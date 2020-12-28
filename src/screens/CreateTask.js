@@ -1,48 +1,27 @@
-import * as Calendar from 'expo-calendar';
 import Constants from 'expo-constants';
-import * as Localization from 'expo-localization';
 import moment from 'moment';
-import React, { useState, useEffect, useContext } from 'react';
-import {
-  Text,
-  Image,
-  View,
-  TouchableOpacity,
-  Dimensions,
-  ScrollView,
-  TextInput,
-  Keyboard,
-  Switch,
-  StyleSheet,
-  Alert,
-  Picker,
-} from 'react-native';
-import { CalendarList } from 'react-native-calendars';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Text, View, Dimensions, ScrollView, StyleSheet } from 'react-native';
 import DateTimePicker from 'react-native-modal-datetime-picker';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-import { Context } from '../data/Context';
-import { getCity } from '../services/city';
-
-const { width: vw } = Dimensions.get('window');
+import {
+  ActButton,
+  Alarm,
+  BackButton,
+  CalendarListComponent,
+  City,
+  Tag,
+  TextInput,
+  Times,
+  Weather,
+} from '../components';
+import { createNewCalendar, Context } from '../data';
+import { getCity, getWeather } from '../services';
 
 const styles = StyleSheet.create({
-  createTaskButton: {
-    width: 252,
-    height: 48,
-    alignSelf: 'center',
-    marginTop: 40,
-    borderRadius: 5,
-    justifyContent: 'center',
-  },
   seperator: {
-    height: 0.5,
-    width: '100%',
-    backgroundColor: '#979797',
-    alignSelf: 'center',
-    marginVertical: 20,
-  },
-  notesContent: {
     height: 0.5,
     width: '100%',
     backgroundColor: '#979797',
@@ -53,52 +32,22 @@ const styles = StyleSheet.create({
     color: '#9CAAC4',
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 5,
   },
-  red: {
-    height: 23,
-    width: 60,
-    backgroundColor: '#b31717',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
+  containerHeader: {
+    flexDirection: 'row',
+    marginTop: 60,
+    width: '100%',
+    alignItems: 'center',
   },
-  blue: {
-    height: 23,
-    width: 60,
-    backgroundColor: '#62CCFB',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  green: {
-    height: 23,
-    width: 60,
-    backgroundColor: '#4CD565',
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  random: {
-    height: 23,
-    width: 60,
-    backgroundColor: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-      Math.random() * Math.floor(256)
-    )},${Math.floor(Math.random() * Math.floor(256))})`,
-    justifyContent: 'center',
-    borderRadius: 5,
-    marginRight: 7,
-  },
-  title: {
+  newTask: {
+    alignSelf: 'center',
+    fontSize: 20,
+    width: 120,
     height: 25,
-    borderColor: '#5DD976',
-    borderLeftWidth: 1,
-    paddingLeft: 8,
-    fontSize: 19,
-    marginBottom: 20,
+    textAlign: 'center',
   },
   taskContainer: {
-    height: 650,
     width: 327,
     alignSelf: 'center',
     borderRadius: 20,
@@ -119,119 +68,101 @@ const styles = StyleSheet.create({
     height: 350,
     alignSelf: 'center',
   },
-  newTask: {
-    alignSelf: 'center',
-    fontSize: 20,
-    width: 120,
-    height: 25,
-    textAlign: 'center',
-  },
-  backButton: {
-    flexDirection: 'row',
-    marginTop: 60,
-    width: '100%',
-    alignItems: 'center',
-  },
   container: {
     flex: 1,
     paddingTop: Constants.statusBarHeight,
     backgroundColor: '#eaeef7',
   },
+  containerBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  updateButton: {
+    backgroundColor: '#ff6347',
+    height: 40,
+    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 40,
+    borderRadius: 5,
+    justifyContent: 'center',
+    marginRight: 20,
+    padding: 10,
+  },
 });
 
-const CreateTask = ({ navigation }) => {
+const CreateTask = ( ) => {
+  const visibleHeight = Dimensions.get('window').height;
+  const todoContext = useContext(Context);
+  const navigation = useNavigation();
+  const route = useRoute();
+
   const [currentDay, setCurrentDay] = useState(moment().format());
-  const [taskText, setTaskText] = useState('');
-  const [notesText, setNotesText] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [visibleHeight, setVisibleHeight] = useState(Dimensions.get('window').height);
-  const [isAlarmSet, setIsAlarmSet] = useState(false);
-  const [alarmTime, setAlarmTime] = useState(moment().format());
-  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
-  const [timeType, setTimeType] = useState('');
-  const [creatTodo, setCreatTodo] = useState({});
-  const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
-  const [selectedDay, setSelectedDay] = useState({});
-  const [color, setColor] = useState('');
-  const [city, setCity] = useState('');
   const [pickerCity, setPickerCity] = useState([]);
+  const [isAlarmSet, setIsAlarmSet] = useState(false);
+  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+  const [createEventAsyncRes, setCreateEventAsyncRes] = useState('');
+  const [selectedDay, setSelectedDay] = useState({
+    [moment(currentDay).format('YYYY-MM-DD')]: {
+      selected: true,
+      selectedColor: '#2E66E7',
+    },
+  });
 
-  const _keyboardDidShow = (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-    setVisibleHeight(Dimensions.get('window').height - e.endCoordinates.height - 30);
-  };
+  const [selectedTask, setSelectedTask] = useState(
+    route.params.selectedTask
+      ? route.params.selectedTask
+      : {
+          title: '',
+          notes: '',
+          city: '',
+          color: '',
+          date: route.params.date,
+          alarm: {
+            time: currentDay,
+            isOn: false,
+            createEventAsyncRes: '',
+          },
+          weather: {
+            description: '',
+            temp: '',
+          },
+        }
+  );
 
-  const _keyboardDidHide = () => {
-    setVisibleHeight(Dimensions.get('window').height);
-  };
-
-  const handleAlarmSet = () => setIsAlarmSet(!isAlarmSet);
-
-  const synchronizeCalendar = async (value) => {
-    const { createNewCalendar } = navigation.state.params;
-    const calendarId = await createNewCalendar();
-    try {
-      const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
-
-      setCreateEventAsyncRes(_createEventAsyncRes, () => {
-        _handleCreateEventData(value);
-      });
-    } catch (e) {
-      Alert.alert(e.message);
-    }
-  };
-
-  const _addEventsToCalendar = async (calendarId) => {
-    const event = {
-      title: taskText,
-      notes: notesText,
-      startDate: moment(alarmTime).add(0, 'm').toDate(),
-      endDate: moment(alarmTime).add(5, 'm').toDate(),
-      timeZone: Localization.timezone,
-    };
-
-    try {
-      const _createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
-
-      return _createEventAsyncRes;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const _showDateTimePicker = () => setIsDateTimePickerVisible(true);
+  const _showDateTimePicker = async () => setIsDateTimePickerVisible(true);
   const _hideDateTimePicker = () => setIsDateTimePickerVisible(false);
-  const getDate = () => {
-    return `${moment(currentDay).format('YYYY')}-${moment(currentDay).format('MM')}-${moment(
-      currentDay
-    ).format('DD')}`;
-  };
-  const _handleCreateEventData = async (value) => {
-    const { updateCurrentTask, currentDate } = navigation.state.params;
+
+  const _handleCreateEventData = async (item) => {
+    const { updateCurrentTask, currentDate } = route.params;
+
     const _creatTodo = {
-      key: uuid(),
-      date: getDate(),
+      key: uuidv4(),
+      date: currentDay,
       todoList: [
         {
-          key: uuid(),
-          date: getDate(),
-          title: taskText,
-          notes: notesText,
-          city,
-          alarm: {
-            time: alarmTime,
-            isOn: isAlarmSet,
-            createEventAsyncRes,
-            date: getDate(),
+          key: uuidv4(),
+          title: item.title,
+          notes: item.notes,
+          date: item.date,
+          city: item.city,
+          weather: {
+            temp: item.weather.temp,
+            description: item.weather.description,
           },
-          color,
+          alarm: {
+            time: item.alarm.time,
+            isOn: item.alarm.isOn,
+            createEventAsyncRes,
+          },
+          color: item.color,
         },
       ],
       markedDot: {
         date: currentDay,
         dots: [
           {
-            key: uuid(),
+            key: uuidv4(),
             color: `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
               Math.random() * Math.floor(256)
             )},${Math.floor(Math.random() * Math.floor(256))})`,
@@ -240,244 +171,289 @@ const CreateTask = ({ navigation }) => {
         ],
       },
     };
-
-    await value.updateTodo(_creatTodo);
+    await todoContext.updateTodo(_creatTodo);
     await updateCurrentTask(currentDate);
+
+    console.log(await todoContext.getTodos());
     navigation.navigate('Home');
   };
 
+  const synchronizeCalendar = async () => {
+    const calendarId = await createNewCalendar();
+    try {
+      const _createEventAsyncRes = await _addEventsToCalendar(calendarId);
+
+      setCreateEventAsyncRes(_createEventAsyncRes, () => {
+        _handleCreateEventData(todoContext);
+      });
+    } catch (e) {
+      Alert.alert(e.message);
+    }
+  };
+
   const _handleDatePicked = (date) => {
-    const selectedDatePicked = currentDay;
+    const selectedDatePicked = selectedTask.alarm.time;
     const hour = moment(date).hour();
     const minute = moment(date).minute();
     const newModifiedDay = moment(selectedDatePicked).hour(hour).minute(minute);
 
-    setAlarmTime(newModifiedDay);
+    const time = {
+      ...selectedTask.alarm,
+      time: newModifiedDay,
+    };
+
+    setSelectedTask({ ...selectedTask, alarm: time });
     _hideDateTimePicker();
   };
 
-  useEffect(() => {
-    const _pickerCity = async () => {
-      try {
-        const getPickerCity = await getCity();
-        setPickerCity(getPickerCity);
-      } catch (error) {}
-    };
-    _pickerCity();
-
-    const _todo = {};
-    _todo[`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`] = {
+  const _getCurrentDay = (date = moment().format('YYYY-MM-DD')) => {
+    const dateCurrent = {};
+    dateCurrent[moment(date).format('YYYY-MM-DD')] = {
       selected: true,
       selectedColor: '#2E66E7',
     };
 
-    setSelectedDay(_todo);
-  }, []);
+    return dateCurrent;
+  };
+
+  const _deleteAlarm = async () => {
+    // try {
+    //   await Calendar.deleteEventAsync(selectedTask.alarm.createEventAsyncRes);
+    //   const updateTask = { ...selectedTask };
+    //   updateTask.alarm.createEventAsyncRes = '';
+    //   selectedTask(updateTask);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+  };
+
+  const _updateAlarm = async () => {
+    const calendarId = await createNewCalendar();
+
+    setSelectedTask({
+      ...selectedTask,
+      startDate: moment(selectedTask.alarm.time).add(0, 'm').toDate(),
+      endDate: moment(selectedTask.alarm.time).add(5, 'm').toDate(),
+      timeZone: 'America/Sao_Paulo',
+    });
+    const event = { ...selectedTask };
+
+    if (selectedTask.alarm.createEventAsyncRes === '') {
+      try {
+        const createEventAsyncRes = await Calendar.createEventAsync(calendarId.toString(), event);
+        const updateTask = { ...selectedTask };
+        updateTask.alarm.createEventAsyncRes = createEventAsyncRes;
+        selectedTask(updateTask);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        await Calendar.updateEventAsync(selectedTask.alarm.createEventAsyncRes.toString(), event);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const handleOnDayPress = async (day) => {
+    const prevSelectTask = { ...selectedTask };
+    prevSelectTask.alarm.time = day.dateString;
+    prevSelectTask.date = moment(day.dateString).format('YYYY-MM-DD');
+    const selected = await _getCurrentDay(day.dateString);
+    setSelectedDay(selected);
+    setCurrentDay(day.dateString);
+    setSelectedTask(prevSelectTask);
+  };
+
+  const handleOnValueChangeTimes = async (time) => {
+    const prevSelectedTask = { ...selectedTask };
+    prevSelectedTask.alarm.times = time;
+    setSelectedTask(prevSelectedTask);
+  };
+
+  const handleOnChangeValueAlarm = () => {
+    const prevSelectedTask = { ...selectedTask };
+    prevSelectedTask.alarm.isOn = !prevSelectedTask.alarm.isOn;
+    setSelectedTask(prevSelectedTask);
+    setIsAlarmSet(prevSelectedTask.alarm.isOn);
+  };
+
+  const handleOnPressUpdateTask = async () => {
+    const { updateCurrentTask, currentDate } = route.params;
+    if (selectedTask.alarm.isOn) {
+      await _updateAlarm();
+    } else {
+      await _deleteAlarm();
+    }
+
+    await todoContext.updateSelectedTask({
+      date: currentDate,
+      todo: selectedTask,
+      dateEqual: currentDay === currentDate
+    });
+
+    updateCurrentTask(currentDate);
+    navigation.navigate('Home');
+  };
+
+  const handleOnPressDeleteTask = async () => {
+    const { updateCurrentTask, currentDate } = route.params;
+    _deleteAlarm();
+    await todoContext.deleteSelectedTask({
+      date: currentDate,
+      todo: selectedTask,
+    });
+    await updateCurrentTask(currentDate);
+    navigation.navigate('Home');
+  };
+
+  const handleOnPressAddTask = async () => {
+    if (isAlarmSet) {
+      await synchronizeCalendar();
+    }
+    if (!isAlarmSet) {
+      _handleCreateEventData(selectedTask);
+    }
+  };
+
+  const handleOnValueChangeCity = async (itemValue, itemIndex) => {
+    setSelectedTask({
+      ...selectedTask,
+      city: itemValue,
+    });
+    try {
+      const date = moment(selectedTask.date).format('YYYY-MM-DD');
+      const _weatherForecast = await getWeather(itemValue, date);
+      setSelectedTask({
+        ...selectedTask,
+        weather: {
+          temp: _weatherForecast.temp,
+          description: _weatherForecast.description,
+        },
+        city: itemValue,
+      });
+    } catch (error) {}
+  };
 
   useEffect(() => {
-    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
-    keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+    const { currentDate, updateCurrentTask } = route.params;
+    const _date = _getCurrentDay(currentDate);
+    setCurrentDay(currentDate);
+    //updateCurrentTask(currentDate);
+    setSelectedDay(_date);
+  }, []);
 
-    return () => {
-      Keyboard.removeListener('keyboardDidShow', _keyboardDidShow);
-      Keyboard.removeListener('keyboardDidHide', _keyboardDidHide);
-    };
+  const _pickerCity = useCallback(async () => {
+    try {
+      const cities = await getCity();
+      setPickerCity(cities);
+    } catch (error) {}
+  });
+
+  useEffect(() => {
+    _pickerCity();
   }, []);
 
   return (
-    <Context.Consumer>
-      {(value) => (
-        <>
-          <DateTimePicker
-            isVisible={isDateTimePickerVisible}
-            onConfirm={_handleDatePicked}
-            onCancel={_hideDateTimePicker}
-            mode="time"
-          />
+    <>
+      <DateTimePicker
+        testID="time-picker"
+        isVisible={isDateTimePickerVisible}
+        onConfirm={_handleDatePicked}
+        onCancel={_hideDateTimePicker}
+        mode="time"
+      />
 
-          <View style={styles.container}>
-            <View
-              style={{
-                height: visibleHeight,
-              }}>
-              <ScrollView
-                contentContainerStyle={{
-                  paddingBottom: 100,
-                }}>
-                <View style={styles.backButton}>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('Home')}
-                    style={{ marginRight: vw / 2 - 120, marginLeft: 20 }}>
-                    <Image
-                      style={{ height: 25, width: 40 }}
-                      source={require('../../assets/back.png')}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-
-                  <Text style={styles.newTask}>New Task</Text>
-                </View>
-                <View style={styles.calenderContainer}>
-                  <CalendarList
-                    style={{
-                      width: 350,
-                      height: 350,
-                    }}
-                    current={currentDay}
-                    minDate={moment().format()}
-                    horizontal
-                    pastScrollRange={0}
-                    pagingEnabled
-                    calendarWidth={350}
-                    onDayPress={(day) => {
-                      //const _selected = selectedDay;
-                      const _selected = {};
-                      const date = day.dateString;
-                      _selected[date] = {
-                        selected: true,
-                        selectedColor: '#2E66E7',
-                      };
-                      setSelectedDay(_selected);
-
-                      setCurrentDay(day.dateString);
-                      setAlarmTime(day.dateString);
-                    }}
-                    monthFormat="yyyy MMMM"
-                    hideArrows
-                    markingType="dot"
-                    theme={{
-                      selectedDayBackgroundColor: '#2E66E7',
-                      selectedDayTextColor: '#ffffff',
-                      todayTextColor: '#2E66E7',
-                      backgroundColor: '#eaeef7',
-                      calendarBackground: '#eaeef7',
-                      textDisabledColor: '#d9dbe0',
-                    }}
-                    markedDates={selectedDay}
-                  />
-                </View>
-                <View style={styles.taskContainer}>
-                  <TextInput
-                    style={styles.title}
-                    onChangeText={(text) => setTaskText(text)}
-                    value={taskText}
-                    placeholder="What do you need to do?"
-                    maxLength={30}
-                  />
-                  <Text style={styles.text}>Tag</Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity onPress={() => setColor('green')} style={styles.green}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Green</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setColor('blue')} style={styles.blue}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Blue</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setColor('red')} style={styles.red}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Red</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() =>
-                        setColor(
-                          `rgb(${Math.floor(Math.random() * Math.floor(256))},${Math.floor(
-                            Math.random() * Math.floor(256)
-                          )},${Math.floor(Math.random() * Math.floor(256))})`
-                        )
-                      }
-                      style={styles.random}>
-                      <Text style={{ textAlign: 'center', fontSize: 14 }}>Random</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.notesContent} />
-                  <View>
-                    <Text style={styles.text}>Notes</Text>
-                    <TextInput
-                      style={{
-                        height: 25,
-                        fontSize: 19,
-                        marginTop: 3,
-                      }}
-                      maxLength={20}
-                      onChangeText={(text) => setNotesText(text)}
-                      value={notesText}
-                      placeholder="Enter notes about the task."
-                    />
-                  </View>
-
-                  <View style={styles.seperator} />
-                  <View>
-                    <Text style={styles.text}>Times</Text>
-                    <TouchableOpacity
-                      onPress={() => _showDateTimePicker()}
-                      style={{
-                        height: 25,
-                        marginTop: 3,
-                      }}>
-                      <Text style={{ fontSize: 19 }}>{moment(alarmTime).format('h:mm A')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.seperator} />
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}>
-                    <View>
-                      <Text style={styles.text}>Alarm</Text>
-                      <View
-                        style={{
-                          height: 25,
-                          marginTop: 3,
-                        }}>
-                        <Text style={{ fontSize: 19 }}>{moment(alarmTime).format('h:mm A')}</Text>
-                      </View>
-                    </View>
-                    <Switch value={isAlarmSet} onValueChange={handleAlarmSet} />
-                  </View>
-                  <View style={styles.seperator} />
-                  <View>
-                    <Text style={styles.text}>City</Text>
-                    <Picker
-                      selectedValue={city}
-                      onValueChange={(itemValue, itemIndex) => setCity(itemValue)}>
-                      {pickerCity.map((_city) => (
-                        <Picker.Item key={_city.id} label={_city.nome} value={_city.id} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  disabled={taskText === ''}
-                  style={[
-                    styles.createTaskButton,
-                    {
-                      backgroundColor: taskText === '' ? 'rgba(46, 102, 231,0.5)' : '#2E66E7',
-                    },
-                  ]}
-                  onPress={async () => {
-                    if (isAlarmSet) {
-                      await synchronizeCalendar(value);
-                    }
-                    if (!isAlarmSet) {
-                      _handleCreateEventData(value);
-                    }
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      textAlign: 'center',
-                      color: '#fff',
-                    }}>
-                    ADD YOUR TASK
-                  </Text>
-                </TouchableOpacity>
-              </ScrollView>
+      <View style={styles.container} testID="container-task">
+        <View style={{ height: visibleHeight }}>
+          <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+            <View style={styles.containerHeader}>
+              <BackButton onPress={() => navigation.navigate('Home')} />
+              <Text style={styles.newTask}> Task</Text>
             </View>
-          </View>
-        </>
-      )}
-    </Context.Consumer>
+            <View style={styles.calenderContainer}>
+              <CalendarListComponent
+                date={selectedTask.date}
+                onDayPress={(day) => handleOnDayPress(day)}
+                selectedDay={selectedDay}
+              />
+            </View>
+            <View style={styles.taskContainer}>
+              <TextInput
+                testID='text-input'
+                title="Title"
+                onChangeText={(text) => {
+                  setSelectedTask({ ...selectedTask, title: text });
+                }}
+                value={selectedTask.title}
+                placeholder="What do you need to do?"
+                maxLength={30}
+              />
+              <View style={styles.seperator} />
+              <Tag onPress={(color) => setSelectedTask({ ...selectedTask, color })} />
+              <View style={styles.seperator} />
+              <TextInput
+                title="Notes"
+                testID="notes-task"
+                maxLength={20}
+                onChangeText={(text) => setSelectedTask({ ...selectedTask, notes: text })}
+                value={selectedTask.notes}
+                placeholder="Enter notes about the task."
+              />
+              <View style={styles.seperator} />
+              <Times
+                onPress={async () => await _showDateTimePicker()}
+                onValueChange={handleOnValueChangeTimes}
+                time={moment(selectedTask.alarm.time).format('h:mm A')}
+                value={selectedTask.alarm.time}
+              />
+              <View style={styles.seperator} />
+              <Alarm
+                alarm={moment(selectedTask.alarm.time).format('h:mm A')}
+                value={selectedTask.alarm.isOn}
+                onValueChange={handleOnChangeValueAlarm}
+              />
+              <View style={styles.seperator} />
+              <City
+                selectedValue={selectedTask.city}
+                pickerCity={pickerCity}
+                onValueChange={(itemValue, itemIndex) =>
+                  handleOnValueChangeCity(itemValue, itemIndex)
+                }
+              />
+              <View style={styles.seperator} />
+              <Weather
+                description={selectedTask.weather.description}
+                temp={selectedTask.weather.temp}
+              />
+            </View>
+            {route.params.isCreate ? (
+              <ActButton
+                title="ADD YOUR TASK"
+                testID="btn-add-task"
+                disabled={selectedTask.title === ''}
+                onPress={handleOnPressAddTask}
+              />
+            ) : (
+              <View style={styles.containerBtn}>
+                <ActButton
+                  title="UPDATE"
+                  testID="btn-update-task"
+                  onPress={handleOnPressUpdateTask}
+                />
+                <ActButton
+                  title="DELETE"
+                  onPress={handleOnPressDeleteTask}
+                  style={styles}
+                  testID="btn-delete-task"
+                />
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </>
   );
 };
 
